@@ -1,0 +1,36 @@
+name: 申请收录官网
+description: 推荐一个还没被收录的官方网站
+title: "[收录] "
+labels: [收录申请]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: 名称
+      placeholder: 例如：中国铁路12306
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: 官网地址
+      placeholder: https://
+    validations:
+      required: true
+  - type: input
+    id: aliases
+    attributes:
+      label: 常用简称 / 别名
+      description: 大家平时怎么搜它？用逗号分隔
+      placeholder: 12306, 火车票, 高铁票
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 官方依据
+      description: 至少提供一条，帮助审核确认这是真官网
+      placeholder: |
+        - ICP 备案主体：xxx 有限公司（可在 https://beian.miit.gov.cn 查询）
+        - 官方 App / 官方微博 / 政府网站中给出的链接
+        - 上市公司公告、营业执照信息等
+    validations:
+      required: true

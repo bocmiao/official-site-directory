@@ -1,0 +1,41 @@
+# 字段说明见 docs/DESIGN.md「数据模型」一节
+- id: gov-cn
+  name: 中国政府网
+  url: https://www.gov.cn
+  aliases: [国务院, 中央人民政府]
+  description: 中华人民共和国中央人民政府门户网站
+- id: chinatax
+  name: 国家税务总局
+  url: https://www.chinatax.gov.cn
+  aliases: [税务局, 个税, 个人所得税]
+  description: 国家税务总局官方网站，含电子税务局入口
+- id: 12315
+  name: 全国12315平台
+  url: https://www.12315.cn
+  aliases: [消费者投诉, 12315投诉]
+  description: 市场监管总局消费投诉举报平台
+- id: gsxt
+  name: 国家企业信用信息公示系统
+  url: https://www.gsxt.gov.cn
+  aliases: [企业信用查询, 工商查询, 企业信息查询]
+  description: 查询企业注册、年报、经营异常等官方信用信息
+- id: miit-beian
+  name: ICP/IP地址/域名信息备案管理系统
+  url: https://beian.miit.gov.cn
+  aliases: [ICP备案查询, 备案查询, 工信部备案]
+  description: 工信部网站备案官方查询，可用来核验网站主办单位
+- id: wenshu
+  name: 中国裁判文书网
+  url: https://wenshu.court.gov.cn
+  aliases: [裁判文书, 判决书查询]
+  description: 最高人民法院裁判文书公开平台
+- id: 122
+  name: 交通安全综合服务管理平台
+  url: https://www.122.gov.cn
+  aliases: [交管12123, 违章查询, 驾照, 122]
+  description: 公安部交通管理局官方服务平台
+- id: 12333
+  name: 国家社会保险公共服务平台
+  url: https://si.12333.gov.cn
+  aliases: [社保查询, 12333, 社保]
+  description: 人力资源和社会保障部社保公共服务平台

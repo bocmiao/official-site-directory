@@ -1,0 +1,31 @@
+- id: 12306
+  name: 中国铁路12306
+  url: https://www.12306.cn
+  aliases: [12306, 火车票, 高铁票, 铁路购票]
+  description: 中国国家铁路集团官方购票网站
+  note: 火车票唯一官方售票网站，搜索时警惕名称相近的“代购/抢票”网站
+- id: airchina
+  name: 中国国际航空
+  url: https://www.airchina.com.cn
+  aliases: [国航, Air China]
+  description: 中国国际航空公司官方网站
+- id: ceair
+  name: 东方航空
+  url: https://www.ceair.com
+  aliases: [东航, 中国东方航空, China Eastern]
+  description: 中国东方航空官方网站
+- id: csair
+  name: 南方航空
+  url: https://www.csair.com
+  aliases: [南航, 中国南方航空, China Southern]
+  description: 中国南方航空官方网站
+- id: ctrip
+  name: 携程旅行
+  url: https://www.ctrip.com
+  aliases: [携程, Trip.com]
+  description: 携程旅行官方网站
+- id: amap
+  name: 高德地图
+  url: https://www.amap.com
+  aliases: [高德]
+  description: 高德地图官方网站

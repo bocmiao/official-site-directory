@@ -1,0 +1,23 @@
+name: 纠错 / 举报
+description: 官网地址有误、已变更、失效，或发现了仿冒网站
+labels: [纠错]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 问题类型
+      options:
+        - 收录的地址不是官网
+        - 官网已更换域名
+        - 网站打不开
+        - 发现仿冒 / 钓鱼网站
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: 详细说明
+      description: 请附上正确地址或仿冒网站地址，以及依据
+    validations:
+      required: true

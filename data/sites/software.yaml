@@ -1,0 +1,63 @@
+- id: wps
+  name: WPS Office
+  url: https://www.wps.cn
+  aliases: [WPS, 金山办公, WPS下载]
+  description: 金山 WPS Office 官方网站
+  note: 很多下载站会捆绑安装其他软件，请从官网下载
+- id: tencent-meeting
+  name: 腾讯会议
+  url: https://meeting.tencent.com
+  aliases: [腾讯会议下载]
+  description: 腾讯会议官方网站
+- id: dingtalk
+  name: 钉钉
+  url: https://www.dingtalk.com
+  aliases: [钉钉下载, DingTalk]
+  description: 钉钉官方网站
+- id: feishu
+  name: 飞书
+  url: https://www.feishu.cn
+  aliases: [飞书下载, Lark]
+  description: 飞书官方网站
+  domains: [larksuite.com]
+- id: baidu-pan
+  name: 百度网盘
+  url: https://pan.baidu.com
+  aliases: [百度云, 网盘]
+  description: 百度网盘官方网站
+- id: huorong
+  name: 火绒安全
+  url: https://www.huorong.cn
+  aliases: [火绒]
+  description: 火绒安全软件官方网站
+- id: 7zip
+  name: 7-Zip
+  url: https://www.7-zip.org
+  aliases: [7z, 解压软件, 压缩软件]
+  description: 7-Zip 开源压缩软件官方网站
+- id: python
+  name: Python
+  url: https://www.python.org
+  aliases: [Python下载]
+  description: Python 编程语言官方网站
+- id: nodejs
+  name: Node.js
+  url: https://nodejs.org
+  aliases: [node, nodejs下载]
+  description: Node.js 官方网站
+- id: git
+  name: Git
+  url: https://git-scm.com
+  aliases: [git下载]
+  description: Git 版本控制工具官方网站
+- id: vscode
+  name: Visual Studio Code
+  url: https://code.visualstudio.com
+  aliases: [VSCode, VS Code]
+  description: 微软 VS Code 编辑器官方网站
+- id: steam
+  name: Steam
+  url: https://store.steampowered.com
+  aliases: [Steam下载, 蒸汽平台]
+  description: Steam 游戏平台官方网站
+  domains: [steampowered.com, steamcommunity.com]

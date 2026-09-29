@@ -1,0 +1,40 @@
+- id: icbc
+  name: 中国工商银行
+  url: https://www.icbc.com.cn
+  aliases: [工商银行, 工行, ICBC]
+  description: 中国工商银行官方网站
+- id: ccb
+  name: 中国建设银行
+  url: https://www.ccb.com
+  aliases: [建设银行, 建行, CCB]
+  description: 中国建设银行官方网站
+- id: boc
+  name: 中国银行
+  url: https://www.boc.cn
+  aliases: [中行, BOC]
+  description: 中国银行官方网站
+- id: abchina
+  name: 中国农业银行
+  url: https://www.abchina.com
+  aliases: [农业银行, 农行, ABC]
+  description: 中国农业银行官方网站
+- id: bankcomm
+  name: 交通银行
+  url: https://www.bankcomm.com
+  aliases: [交行, BOCOM]
+  description: 交通银行官方网站
+- id: cmbchina
+  name: 招商银行
+  url: https://www.cmbchina.com
+  aliases: [招行, CMB]
+  description: 招商银行官方网站
+- id: alipay
+  name: 支付宝
+  url: https://www.alipay.com
+  aliases: [Alipay, 蚂蚁]
+  description: 支付宝官方网站
+- id: unionpay
+  name: 中国银联
+  url: https://www.unionpay.com
+  aliases: [银联, UnionPay, 云闪付]
+  description: 中国银联官方网站
