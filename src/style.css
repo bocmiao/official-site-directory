@@ -44,9 +44,9 @@ body {
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
 
-header { padding: 40px 0 24px; text-align: center; }
+header { padding: 24px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
 header h1 { margin: 0 0 4px; font-size: 28px; }
 header h1 a { color: inherit; }
 header p { margin: 0; color: var(--muted); }
@@ -54,7 +54,7 @@ header p { margin: 0; color: var(--muted); }
 main > h1 { font-size: 28px; margin: 16px 0 8px; }
 .intro { max-width: 65ch; color: var(--muted); }
 
-.search { position: sticky; top: 0; z-index: 1; padding: 12px 0; background: var(--bg); }
+.search { padding: 20px 0; background: var(--bg); }
 .search input {
   width: 100%;
   padding: 14px 16px;
@@ -150,7 +150,7 @@ footer { padding: 24px 0 40px; color: var(--muted); font-size: 13px; text-align:
 header nav { margin-top: 12px; font-size: 13px; }
 .stats { display: flex; flex-wrap: wrap; gap: 12px 28px; list-style: none; padding: 0; color: var(--muted); }
 .stats strong { color: var(--text); font-size: 24px; margin-right: 6px; font-variant-numeric: tabular-nums; }
-.filters { display: grid; grid-template-columns: 1fr 1.2fr 1.5fr auto; gap: 12px; align-items: end; margin-top: 16px; }
+.filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 20px; align-items: end; margin-top: 20px; }
 .filters label { margin: 0; font-size: 13px; min-width: 0; }
 select { display: block; width: 100%; min-width: 0; margin-top: 4px; padding: 10px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; min-height: 44px; }
 button:disabled { opacity: .5; cursor: default; }
@@ -175,3 +175,81 @@ button:disabled { opacity: .5; cursor: default; }
   .stats strong { font-size: 21px; }
   #result-info { scroll-margin-top: 16px; }
 }
+/* Directory controls extend the established blue / neutral visual system. */
+a { text-underline-offset: 3px; }
+input { caret-color: var(--accent); }
+* { scrollbar-color: var(--border) var(--bg); scrollbar-width: thin; }
+header nav { margin: 0 0 0 auto; }
+header p { font-size: 13px; }
+main > h1 { font-size: clamp(28px, 4vw, 38px); letter-spacing: -.025em; margin-top: 32px; }
+.stats { font-size: 13px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.stats strong { font-size: 16px; }
+.quick-filters, .active-filters, .tag-list, .card-tags { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.quick-filters { margin: 16px 0 4px; font-size: 13px; }
+.quick-filters > span { color: var(--muted); margin-right: 4px; }
+.quick-filters button { padding: 6px 12px; min-height: 36px; }
+.active-filters { margin: 0 0 16px; }
+.active-filters:empty { display: none; }
+.active-filters button { font-size: 12px; padding: 6px 10px; border-color: var(--accent); }
+.filters #clear-filters { grid-column: 3; justify-self: end; padding: 6px 12px; }
+.results-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 24px; border-top: 1px solid var(--border); padding: 12px 0 0; }
+.results-toolbar #result-info { font-size: 13px; max-width: 62ch; }
+.result-options { display: flex; align-items: end; gap: 12px; flex-shrink: 0; }
+.result-options label { font-size: 12px; }
+.result-options select { min-width: 130px; }
+.result-options button { font-size: 13px; min-height: 44px; }
+#view-toggle[aria-pressed=true] { background: var(--accent); color: var(--surface); }
+.card { border-radius: 12px; }
+.card-main { padding-top: 20px; }
+.card-name { font-size: 17px; }
+.card-meta { margin: 4px 16px 10px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.card-tags { padding: 0 16px 12px; gap: 6px; }
+.tag { display: inline-block; padding: 4px 9px; border: 1px solid var(--border); border-radius: 5px; font-size: 12px; background: var(--bg); color: var(--text); }
+.tag:hover { color: var(--accent); border-color: var(--accent); }
+.card-tags .tag { min-height: 30px; }
+.card-status { padding-top: 10px; border-top: 1px solid var(--border); }
+.card-detail { padding-bottom: 16px; }
+.compact-list { grid-template-columns: 1fr; gap: 0; }
+.compact-list .card { border-radius: 0; border-width: 0 0 1px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 28%); padding: 8px 0; background: transparent; }
+.compact-list .card-main { grid-row: span 3; padding-top: 12px; }
+.compact-list .card-tags { align-items: start; }
+.compact-list .card-desc { -webkit-line-clamp: 2; }
+.compact-list .card-status { border: 0; padding-top: 0; }
+.compact-list .card-detail { grid-column: 2; padding-bottom: 8px; }
+.breadcrumbs { font-size: 13px; margin: 0 0 24px; color: var(--muted); }
+.detail { max-width: 900px; margin: 0 auto; padding: 32px; }
+.detail h2 { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.detail dl { grid-template-columns: minmax(130px, 24%) 1fr; gap: 12px 24px; }
+.detail p { max-width: 75ch; }
+.tag-list { margin: 20px 0; }
+#copy-address { display: block; margin: 12px 0; }
+#copy-status { font-size: 13px; color: var(--muted); }
+#result-info { scroll-margin-top: 20px; }
+@media (max-width: 800px) {
+  header nav { width: 100%; margin-left: 0; }
+  .results-toolbar { align-items: start; flex-direction: column; gap: 0; }
+  .result-options { width: 100%; justify-content: flex-end; margin-bottom: 12px; }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 0 16px; }
+  header { margin-bottom: 20px; padding-top: 20px; }
+  header p { display: none; }
+  header nav { font-size: 12px; }
+  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .filters #clear-filters { grid-column: 2; }
+  .search { padding: 12px 0; }
+  .search input { font-size: 16px; }
+  .quick-filters { gap: 6px; }
+  .quick-filters > span { width: 100%; }
+  .stats { gap: 8px 16px; }
+  .stats strong { font-size: 16px; }
+  .detail { padding: 20px 16px; }
+  .detail dl { grid-template-columns: 1fr; gap: 2px; }
+  .compact-list .card { display: flex; }
+  .compact-list .card-main { padding: 12px 8px; }
+  .compact-list .card-meta, .compact-list .card-status { margin-left: 8px; }
+  .compact-list .card-tags, .compact-list .card-detail { padding-left: 8px; }
+}
+.filter-panel { margin-top: 12px; }
+.filter-panel > summary { font-size: 13px; color: var(--accent); }
+.filter-panel .filters { margin-top: 8px; }

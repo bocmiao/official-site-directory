@@ -8,7 +8,7 @@ function searchDocument(site) {
   if (!documents.has(site)) documents.set(site, {
     names: [site.n, ...site.a].map(compact),
     hosts: [...site.h, hostOf(site.u) || ''],
-    tags: (site.t || []).map(compact), description: site.d.toLowerCase(),
+    tags: (site.t || []).map(compact), description: [site.d, site.loc || ''].join(' ').toLowerCase(),
   });
   return documents.get(site);
 }
@@ -109,13 +109,15 @@ export function search(query, index, { includePending = false, includeSourced = 
 }
 
 // Paged browsing is separate from the conservative verified-only search API.
-export function queryCatalog(query, index, { category = '', region = '', status = 'catalog', page = 1, pageSize = 24, today = new Date().toISOString().slice(0, 10) } = {}) {
+export function queryCatalog(query, index, { category = '', subcategory = '', region = '', tag = '', source = '', sort = 'relevance', status = 'catalog', page = 1, pageSize = 24, today = new Date().toISOString().slice(0, 10) } = {}) {
   const filtered = index.filter((s) => {
     const current = effectiveStatus(s.v, s.due, today);
     if (current === 'withdrawn' || (category && s.c !== category) || (region && s.r !== region)) return false;
+    if ((subcategory && s.sc !== subcategory) || (tag && !s.t?.includes(tag)) || (source && s.source !== source)) return false;
     return status === 'all' || (status === 'catalog' ? ['verified', 'sourced'].includes(current) : current === status);
   });
   const matched = query.trim() ? search(query, filtered, { includePending: true, limit: Infinity, today }) : filtered;
+  if (sort === 'name') matched.sort((a, b) => a.n.localeCompare(b.n, 'zh-CN') || a.id.localeCompare(b.id));
   const size = Math.max(1, Math.min(100, Number.isFinite(pageSize) ? Math.floor(pageSize) : 24));
   const pages = Math.max(1, Math.ceil(matched.length / size));
   const currentPage = Math.max(1, Math.min(pages, Number.isFinite(page) ? Math.floor(page) : 1));

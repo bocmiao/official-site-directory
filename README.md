@@ -8,13 +8,17 @@
 
 其中仅 Python、Node.js、Git、Visual Studio Code、7-Zip 共 **5 个产品、14 个入口**完成公开来源辅助核对，其余新增记录均明确标为 `sourced`（来源收录，未核验），另有 57 条原始待审核记录。**目录规模不是已验证官网数量；辅助核对不是人工复核。** 采集日期为 2026-09-30，不代表上游每条数据的更新时间。
 
+在线查阅：[官网收录 Web 目录](https://bocmiao.github.io/official-site-directory/)。
+
 ## 能做什么
 
 - 按名称、别名、拼音或首字母查找；`Node.js` 优先识别为产品名称。
 - 搜索 `Python 下载`、`VS Code 文档` 时优先提供对应入口。
-- 默认可搜索已核对记录和第三方来源记录；可按分类、地区、状态组合筛选，或切换为“仅已核对来源”。
+- 默认可搜索已核对记录和第三方来源记录；可按分类、细分目录、地区、标签、来源与状态组合筛选，或切换为“仅已核对来源”。
 - 每页 24 条并显示真实总数，支持清空条件、中文输入法及中文名称/别名的拼音。保留 56 条人工中文修订，新增 ROR 原始多语种名称。
 - 粘贴网址，只比对完整主机名。不会将父域名下所有子域名自动标为官方，也不因名称相似判定仿冒。
+- 支持标签快捷筛选、名称排序、卡片/紧凑列表切换，详情页可回到同类或同地区目录。
+- 按上游快照补充机构成立年份、城市/省州、名称语言、上游更新时间及软件包平台；未知信息列入待补充清单。整理方法见 [分类与资料说明](docs/TAXONOMY.md)。
 - 详情页展示主体、各入口、对应来源、核对方式与时间；待审核和过期记录暂停直达。
 - 来源收录展示固定提交或发布快照、上游记录标识、采集日期及许可；不提供直达按钮，也不参与已核对主机名匹配。
 - 无 JavaScript 时仍可使用每页 60 条的分类目录；搜索加载失败可重试。
@@ -40,17 +44,17 @@ npm run audit:data
 
 ## 贡献记录
 
-[提交收录或纠错](https://github.com/bocmiao/official-site-directory/issues/new/choose)需要 GitHub 账号，也可直接修改 `data/sites/*.yaml` 提交 PR。
+[提交收录或纠错](https://github.com/bocmiao/official-site-directory/issues/new/choose)需要 GitHub 账号，有维护权限时也可直接修改 `data/sites/*.yaml`，校验后提交到 `main`。
 
 候选标为 `pending`；只有逐一核对来源后，才填写核验字段和 `entries`、`evidence` 并设为 `verified`。结构校验不替代维护者对来源真实性的审阅。数据规范及维护步骤见 [设计与维护说明](docs/DESIGN.md)。
 
 批量数据更新及中文修订见 [数据来源与更新](docs/DATA_SOURCES.md)。不要直接编辑 `data/imported/catalog.json` 或 `ror.json`，别名、说明及撤销状态放在 `data/overrides.json`，刷新不会覆盖。
 
-第三方派生数据遵循 Homebrew Cask 的 BSD-2-Clause、Hipo 的 MIT、ROR 的 CC0-1.0；ROR 中来自 GeoNames 的地区代码保留 CC-BY-4.0 归属说明。许可原文位于 `data/licenses/`，与数据一同导出。本项目原创代码与数据尚未选择独立许可证。
+第三方派生数据遵循 Homebrew Cask 的 BSD-2-Clause、Hipo 的 MIT、ROR 的 CC0-1.0；ROR 中来自 GeoNames 的地理资料保留 CC-BY-4.0 归属说明。许可原文位于 `data/licenses/`，与数据一同导出。本项目原创代码与数据尚未选择独立许可证。
 
 ## CI 与发布
 
-CI 在所有分支推送和 PR 时运行测试、构建，不再依赖分支必须叫 `main`。当前默认分支名由 GitHub 自动读取。
+项目直接在 `main` 维护。CI 在推送时运行测试、数据审计与构建，通过后从默认分支部署 GitHub Pages。
 
 启用 GitHub Pages 时：
 
@@ -59,7 +63,7 @@ CI 在所有分支推送和 PR 时运行测试、构建，不再依赖分支必�
 3. 设置仓库变量 `ENABLE_PAGES=true`。
 4. 在默认分支推送或手动运行 CI；发布构建会拒绝缺失、示例域名或非 HTTPS 的 `SITE_URL`。
 
-只有默认分支可部署。每日构建用于刷新过期状态；未启用 Pages 时只执行检查，不发布。PR 分支仅供审阅，不自动改变线上站点。
+只有默认分支可部署。每日构建用于刷新过期状态；未启用 Pages 时只执行检查，不发布。其他分支不改变线上站点。
 
 ## 巡检
 
@@ -82,6 +86,8 @@ data/sites/          产品候选、核验记录与入口
 data/imported/       清洗后的批量数据及来源清单
 data/overrides.json  不随导入覆盖的中文说明、别名和撤销记录
 data/licenses/       第三方来源许可证全文
+data/profiles.json   有来源依据的机构和软件包资料
+scripts/lib/taxonomy.js 分类与主题标签规则
 scripts/import-data.js 显式刷新或离线重放批量导入
 scripts/import-ror.js  按固定快照和 SHA-256 导入 ROR 批次
 scripts/audit-data.js 数量、去重、统计及搜索性能报告

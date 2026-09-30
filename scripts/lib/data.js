@@ -4,13 +4,14 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { pinyin } from 'pinyin-pro';
 import { effectiveStatus, hostOf, parseWebUrl } from '../../src/search.js';
+import { classify, TOPICS } from './taxonomy.js';
 
 export { hostOf };
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const DATA_DIR = path.join(ROOT, 'data');
 const ID_RE = /^[a-z0-9][a-z0-9-]*$/;
 const FIELDS = new Set(['id', 'name', 'url', 'aliases', 'description', 'note', 'icp', 'tags', 'owner',
-  'verification_status', 'verified_at', 'review_due_at', 'reviewer', 'review_method', 'evidence', 'entries', 'source', 'collected_at', 'region']);
+  'verification_status', 'verified_at', 'review_due_at', 'reviewer', 'review_method', 'evidence', 'entries', 'source', 'collected_at', 'region', 'profile', 'subcategory', 'classification']);
 const ENTRY_FIELDS = new Set(['id', 'label', 'purpose', 'url', 'region', 'language']);
 const EVIDENCE_FIELDS = new Set(['url', 'title', 'relation', 'entry_ids']);
 const text = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -21,7 +22,7 @@ export function loadCategories(dataDir = DATA_DIR) {
   return readYaml(path.join(dataDir, 'categories.yaml')).sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
 }
 
-export function loadSites(dataDir = DATA_DIR) {
+export function loadSites(dataDir = DATA_DIR, { profiles = true } = {}) {
   const dir = path.join(dataDir, 'sites');
   const curated = fs.readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().flatMap((file) => {
     const entries = readYaml(path.join(dir, file));
@@ -48,7 +49,17 @@ export function loadSites(dataDir = DATA_DIR) {
     if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some((key) => !['aliases', 'name', 'description', 'tags', 'verification_status'].includes(key))) throw new Error(`Invalid override: ${id}`);
     if (value.verification_status && !['pending', 'review', 'withdrawn'].includes(value.verification_status)) throw new Error(`Overrides cannot grant verification: ${id}`);
   }
-  return [...curated, ...records.filter((s) => !curatedIds.has(s.id)).map((s) => ({ ...s, ...overrides[s.id] }))];
+  const sites = [...curated, ...records.filter((s) => !curatedIds.has(s.id)).map((s) => ({ ...s, ...overrides[s.id] }))];
+  const profileFile = path.join(dataDir, 'profiles.json');
+  const profileData = profiles && fs.existsSync(profileFile) ? JSON.parse(fs.readFileSync(profileFile, 'utf8')) : null;
+  if (profileData && (profileData.schema_version !== 1 || !profileData.records || typeof profileData.records !== 'object')) throw new Error('Invalid profiles schema');
+  const ids = new Set(sites.map((s) => s.id));
+  for (const id of Object.keys(profileData?.records || {})) if (!ids.has(id)) throw new Error(`Profile references missing record: ${id}`);
+  return sites.map((s) => {
+    const profile = profileData?.records[s.id];
+    if (profile && (profile.source_record !== s.source?.record || profile.homepage !== s.url || profile.collected_at !== s.collected_at)) throw new Error(`Stale profile; refresh source metadata: ${s.id}`);
+    return classify(profile ? { ...s, profile } : s);
+  });
 }
 
 export function loadSources(dataDir = DATA_DIR) {
@@ -57,7 +68,11 @@ export function loadSources(dataDir = DATA_DIR) {
     return fs.existsSync(target) ? [JSON.parse(fs.readFileSync(target, 'utf8'))] : [];
   });
   return { schema_version: 2, accepted: batches.reduce((n, b) => n + b.accepted, 0),
-    sources: batches.flatMap((b) => b.sources.map((s) => ({ ...s, collected_at: b.collected_at }))), batches };
+    sources: batches.flatMap((b) => b.sources.map((s) => ({ ...s, collected_at: b.collected_at,
+      ...(s.id === 'ror' && fs.existsSync(path.join(dataDir, 'profiles.json')) ? {
+        license: 'CC0-1.0; location metadata CC-BY-4.0',
+        attribution: 'Research Organization Registry; country codes, city and subdivision names derived from GeoNames (https://www.geonames.org), CC BY 4.0. Coordinates are not retained.',
+      } : {}) }))), batches };
 }
 
 function validDate(value) {
@@ -86,6 +101,18 @@ export function validate(categories, sites, today = new Date().toISOString().sli
     for (const key of ['name', 'description']) if (!text(s[key])) fail(`${key} 必填`);
     for (const key of ['aliases', 'tags']) if (!stringList(s[key])) fail(`${key} 必须是非空字符串列表`);
     if (!catIds.has(s.category)) fail('未知分类');
+    if (s.subcategory && s.subcategory !== s.category && !TOPICS.some((t) => t.id === s.subcategory && t.category === s.category)) fail('未知二级分类');
+    if (s.classification && s.classification !== 'rules-v1') fail('未知分类规则');
+    if (s.profile) {
+      const p = s.profile;
+      const fields = ['source_record', 'homepage', 'collected_at', 'established', 'locations', 'organization_types', 'name_languages', 'source_updated', 'distribution', 'cask_languages', 'package_platforms'];
+      if (Object.keys(p).some((k) => !fields.includes(k))) fail('资料含未知字段');
+      if (p.source_record !== s.source?.record || p.homepage !== s.url || p.collected_at !== s.collected_at) fail('资料与来源记录不一致');
+      if (p.established != null && (!Number.isInteger(p.established) || p.established < 1 || p.established > Number(today.slice(0, 4)))) fail('成立年份无效');
+      if (p.source_updated && (!validDate(p.source_updated) || p.source_updated > today)) fail('上游更新日期无效');
+      for (const k of ['organization_types', 'name_languages', 'cask_languages', 'package_platforms']) if (p[k] != null && !stringList(p[k])) fail(`资料 ${k} 必须是字符串列表`);
+      if (p.locations && (!Array.isArray(p.locations) || p.locations.some((l) => !l || !/^[A-Z]{2}$/.test(l.country) || typeof l.city !== 'string' || typeof l.subdivision !== 'string' || Object.keys(l).some((k) => !['country', 'city', 'subdivision'].includes(k))))) fail('所在地资料无效');
+    }
     const url = parseWebUrl(s.url);
     if (!url) fail('url 必须是无凭据、无自定义端口的公开 http(s) URL');
     if (url?.search || url?.hash) fail('首页 url 不应包含查询参数或锚点');
@@ -164,7 +191,8 @@ export function buildSearchIndex(sites, today) {
       id: s.id, n: s.name, u: s.url, d: s.description, c: s.category, a: s.aliases,
       p: [...new Set(names.filter((n) => /[\u3400-\u9fff]/.test(n)).flatMap(pinyinKeys).filter(Boolean))],
       v: status, due: s.review_due_at, checked: s.verified_at,
-      r: s.region || '', t: s.tags, source: s.source?.id,
+      r: s.region || '', t: s.tags, source: s.source?.id || 'curated', sc: s.subcategory,
+      loc: [...new Set((s.profile?.locations || []).flatMap((l) => [l.city, l.subdivision]).filter(Boolean))].join(' / '),
       e: status === 'verified' ? s.entries : [],
       h: status === 'verified' ? [...new Set(s.entries.map((e) => hostOf(e.url)))] : [],
     };

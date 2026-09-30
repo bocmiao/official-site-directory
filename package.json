@@ -1,6 +1,6 @@
 {
   "name": "official-site-directory",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "官网收录：查找有来源依据的官网与具体入口",
   "type": "module",

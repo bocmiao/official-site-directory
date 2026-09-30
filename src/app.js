@@ -5,6 +5,16 @@ const input = $('#q');
 const category = $('#category-filter');
 const region = $('#region-filter');
 const status = $('#status-filter');
+const topic = $('#topic-filter');
+const tag = $('#tag-filter');
+const source = $('#source-filter');
+const sort = $('#sort-order');
+const view = $('#view-toggle');
+const activeFilters = $('#active-filters');
+const filterFields = { category, topic, region, tag, source, status };
+const topicOptions = [...topic.options].map((o) => ({ value: o.value, text: o.textContent, category: o.dataset.category }));
+const sourceNames = Object.fromEntries([...source.options].map((o) => [o.value, o.textContent]));
+const regionNames = Object.fromEntries([...region.options].map((o) => [o.value, o.textContent]));
 const clear = $('#clear-filters');
 const results = $('#results');
 const verdict = $('#verdict');
@@ -16,7 +26,8 @@ const pagination = $('#pagination');
 const previous = $('#previous-page');
 const next = $('#next-page');
 const pageInfo = $('#page-info');
-const controls = [input, category, region, status, clear];
+const quickButtons = [...document.querySelectorAll('[data-quick]')];
+const controls = [input, ...Object.values(filterFields), sort, view, clear, ...quickButtons];
 const base = document.documentElement.dataset.base || './';
 let index = [];
 let loaded = false;
@@ -43,6 +54,12 @@ function card(site, query) {
       el('span', { class: `card-host ${entry ? '' : 'host-unverified'}` }, hostOf(entry?.url ?? site.u) || '地址待核对'),
       el('span', { class: 'card-desc' }, site.d),
       ...(entry ? [el('span', { class: 'entry-purpose' }, `${entry.label} · ${entry.region}`)] : [])),
+    el('p', { class: 'card-meta' }, [site.r ? regionNames[site.r] : '', site.loc, sourceNames[site.source]].filter(Boolean).join(' · ')),
+    el('div', { class: 'card-tags' }, ...(site.t || []).slice(0, 4).map((t) => {
+      const button = el('button', { class: 'tag', type: 'button', 'aria-label': `筛选标签：${t}` }, t);
+      button.addEventListener('click', () => { tag.value = t; page = 1; run(); info.scrollIntoView({ block: 'center' }); });
+      return button;
+    })),
     el('p', { class: 'card-status' }, `${STATUS_LABELS[current]}${entry ? ` · ${site.checked}` : ' · 仅查看资料'}`),
     el('a', { class: 'card-detail', href: detail }, '查看入口与依据'));
 }
@@ -83,7 +100,7 @@ function run() {
       textQuery = '';
     }
   }
-  const result = queryCatalog(textQuery, candidates, { category: category.value, region: region.value, status: status.value, page });
+  const result = queryCatalog(textQuery, candidates, { category: category.value, subcategory: topic.value, tag: tag.value, source: source.value, sort: sort.value, region: region.value, status: status.value, page });
   page = result.page;
   pages = result.pages;
   browse.hidden = true;
@@ -91,11 +108,28 @@ function run() {
   const start = (page - 1) * result.pageSize + 1;
   info.textContent = result.total ? `共 ${result.total.toLocaleString('zh-CN')} 条，显示 ${start}–${start + result.items.length - 1} 条。来源收录尚未完成官网核验。` : '没有找到符合条件的记录。可清空筛选或换个名称重试。';
   results.replaceChildren(...(result.items.length ? result.items.map((s) => card(s, query)) : [el('li', { class: 'empty' },
-    '没有匹配记录。也欢迎 ', el('a', { href: document.documentElement.dataset.submit, target: '_blank', rel: 'noopener noreferrer' }, '申请收录'), '。')]));
+    '没有匹配记录。试试清空条件，或将收录状态切换为“全部可见记录”。也欢迎 ', el('a', { href: document.documentElement.dataset.submit, target: '_blank', rel: 'noopener noreferrer' }, '申请收录'), '。')]));
   pagination.hidden = result.total === 0;
   previous.disabled = page <= 1;
   next.disabled = page >= pages;
   pageInfo.textContent = `第 ${page} / ${pages} 页`;
+  activeFilters.replaceChildren(...Object.entries(filterFields).filter(([key, field]) => field.value && !(key === 'status' && field.value === 'catalog')).map(([key, field]) => {
+    const label = field.selectedOptions[0]?.textContent || field.value;
+    const button = el('button', { type: 'button', 'aria-label': `移除筛选：${label}` }, `${label} ×`);
+    button.addEventListener('click', () => { field.value = key === 'status' ? 'catalog' : ''; if (key === 'category') updateFacets(); page = 1; run(); });
+    return button;
+  }));
+}
+
+function updateFacets() {
+  const selectedTopic = topic.value;
+  topic.replaceChildren(...topicOptions.filter((o) => !o.value || !category.value || o.category === category.value).map((o) => el('option', { value: o.value }, o.text)));
+  topic.value = [...topic.options].some((o) => o.value === selectedTopic) ? selectedTopic : '';
+  const selectedTag = tag.value;
+  const counts = new Map();
+  for (const site of index) if (!category.value || site.c === category.value) for (const t of site.t || []) counts.set(t, (counts.get(t) || 0) + 1);
+  tag.replaceChildren(el('option', { value: '' }, '全部标签'), ...[...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-CN')).map(([t, count]) => el('option', { value: t }, `${t} (${count})`)));
+  tag.value = counts.has(selectedTag) ? selectedTag : '';
 }
 
 async function load() {
@@ -112,6 +146,15 @@ async function load() {
     index = data.sort((a, b) => Number(isVerified(b)) - Number(isVerified(a)) || a.n.localeCompare(b.n, 'zh-CN'));
     loaded = true;
     controls.forEach((control) => { control.disabled = false; });
+    updateFacets();
+    // Only explicit directory filters are accepted. Search text and pasted URLs stay local.
+    if (!load.hasAppliedFilters) {
+      const params = new URLSearchParams(location.search);
+      if ([...category.options].some((o) => o.value === params.get('category'))) category.value = params.get('category');
+      updateFacets();
+      for (const [key, field] of Object.entries(filterFields)) if ([...field.options].some((o) => o.value === params.get(key))) field.value = params.get(key);
+      load.hasAppliedFilters = true;
+    }
     loadStatus.hidden = true;
     run();
   } catch {
@@ -132,11 +175,27 @@ function searchChanged() {
 input.addEventListener('compositionstart', () => { composing = true; clearTimeout(timer); });
 input.addEventListener('compositionend', () => { composing = false; searchChanged(); });
 input.addEventListener('input', searchChanged);
-for (const filter of [category, region, status]) filter.addEventListener('change', () => { page = 1; run(); });
+for (const filter of [...Object.values(filterFields), sort]) filter.addEventListener('change', () => { if (filter === category) updateFacets(); page = 1; run(); });
+function resetFilters() {
+  input.value = ''; Object.values(filterFields).forEach((field) => { field.value = ''; }); status.value = 'catalog'; sort.value = 'relevance'; page = 1; updateFacets();
+}
 clear.addEventListener('click', () => {
   clearTimeout(timer);
-  input.value = ''; category.value = ''; region.value = ''; status.value = 'catalog'; page = 1;
+  resetFilters();
   run(); input.focus();
+});
+for (const button of quickButtons) button.addEventListener('click', () => {
+  resetFilters();
+  if (button.dataset.quick === 'verified') status.value = 'verified';
+  else if (button.dataset.quick === 'CN') { category.value = 'education'; region.value = 'CN'; }
+  else if (button.dataset.quick === 'software') category.value = 'software';
+  else tag.value = button.dataset.quick;
+  updateFacets(); run();
+});
+view.addEventListener('click', () => {
+  const compact = results.classList.toggle('compact-list');
+  view.setAttribute('aria-pressed', String(compact));
+  view.textContent = compact ? '切换卡片' : '紧凑列表';
 });
 for (const [button, direction] of [[previous, -1], [next, 1]]) button.addEventListener('click', () => {
   clearTimeout(timer);
@@ -150,4 +209,5 @@ document.addEventListener('keydown', (event) => {
     event.preventDefault(); input.focus();
   }
 });
+if (matchMedia('(max-width: 640px)').matches) $('#filter-panel').open = false;
 load();
