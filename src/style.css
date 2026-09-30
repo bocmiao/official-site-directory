@@ -145,3 +145,33 @@ h2 { font-size: 18px; margin: 24px 0 0; }
 .tip { background: var(--warn-bg); color: var(--warn-fg); padding: 10px 14px; border-radius: var(--radius); }
 
 footer { padding: 24px 0 40px; color: var(--muted); font-size: 13px; text-align: center; border-top: 1px solid var(--border); margin-top: 24px; }
+
+/* Large catalog browsing */
+header nav { margin-top: 12px; font-size: 13px; }
+.stats { display: flex; flex-wrap: wrap; gap: 12px 28px; list-style: none; padding: 0; color: var(--muted); }
+.stats strong { color: var(--text); font-size: 24px; margin-right: 6px; font-variant-numeric: tabular-nums; }
+.filters { display: grid; grid-template-columns: 1fr 1.2fr 1.5fr auto; gap: 12px; align-items: end; margin-top: 16px; }
+.filters label { margin: 0; font-size: 13px; min-width: 0; }
+select { display: block; width: 100%; min-width: 0; margin-top: 4px; padding: 10px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; min-height: 44px; }
+button:disabled { opacity: .5; cursor: default; }
+.pagination { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin: 24px 0; }
+.pagination a { padding: 10px; }
+.pagination span { font-variant-numeric: tabular-nums; }
+.category-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; list-style: none; padding: 0; }
+.category-list a { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 6px; }
+.category-list span { color: var(--muted); }
+.host-unverified { color: var(--muted); }
+.card-name, .card-desc, h1 { overflow-wrap: anywhere; }
+.card-desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.source-list { padding: 0; list-style: none; }
+.source-list li { border-bottom: 1px solid var(--border); padding: 12px 0; }
+.quality-counts { display: grid; grid-template-columns: max-content 1fr; gap: 8px; }
+#result-info { scroll-margin-top: 280px; }
+@media (max-width: 640px) {
+  .filters { grid-template-columns: 1fr 1fr; }
+  .filters button { min-height: 44px; }
+  .search { position: static; }
+  .stats { gap: 8px 18px; }
+  .stats strong { font-size: 21px; }
+  #result-info { scroll-margin-top: 16px; }
+}

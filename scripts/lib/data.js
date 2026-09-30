@@ -10,7 +10,7 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const DATA_DIR = path.join(ROOT, 'data');
 const ID_RE = /^[a-z0-9][a-z0-9-]*$/;
 const FIELDS = new Set(['id', 'name', 'url', 'aliases', 'description', 'note', 'icp', 'tags', 'owner',
-  'verification_status', 'verified_at', 'review_due_at', 'reviewer', 'review_method', 'evidence', 'entries']);
+  'verification_status', 'verified_at', 'review_due_at', 'reviewer', 'review_method', 'evidence', 'entries', 'source', 'collected_at', 'region']);
 const ENTRY_FIELDS = new Set(['id', 'label', 'purpose', 'url', 'region', 'language']);
 const EVIDENCE_FIELDS = new Set(['url', 'title', 'relation', 'entry_ids']);
 const text = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -23,7 +23,7 @@ export function loadCategories(dataDir = DATA_DIR) {
 
 export function loadSites(dataDir = DATA_DIR) {
   const dir = path.join(dataDir, 'sites');
-  return fs.readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().flatMap((file) => {
+  const curated = fs.readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().flatMap((file) => {
     const entries = readYaml(path.join(dir, file));
     if (!Array.isArray(entries)) throw new Error(`${file}: 顶层必须是列表`);
     return entries.map((s) => ({
@@ -33,6 +33,19 @@ export function loadSites(dataDir = DATA_DIR) {
       category: path.basename(file, '.yaml'), _file: `data/sites/${file}`,
     }));
   });
+  const imported = path.join(dataDir, 'imported', 'catalog.json');
+  const records = fs.existsSync(imported) ? JSON.parse(fs.readFileSync(imported, 'utf8')) : [];
+  if (!Array.isArray(records)) throw new Error('Imported catalog must be an array');
+  const overrideFile = path.join(dataDir, 'overrides.json');
+  const overrides = fs.existsSync(overrideFile) ? JSON.parse(fs.readFileSync(overrideFile, 'utf8')) : {};
+  const curatedIds = new Set(curated.map((s) => s.id));
+  const importedIds = new Set(records.map((s) => s.id));
+  for (const [id, value] of Object.entries(overrides)) {
+    if (!importedIds.has(id) && !curatedIds.has(id)) throw new Error(`Override references missing record: ${id}`);
+    if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some((key) => !['aliases', 'name', 'description', 'tags', 'verification_status'].includes(key))) throw new Error(`Invalid override: ${id}`);
+    if (value.verification_status && !['pending', 'review', 'withdrawn'].includes(value.verification_status)) throw new Error(`Overrides cannot grant verification: ${id}`);
+  }
+  return [...curated, ...records.filter((s) => !curatedIds.has(s.id)).map((s) => ({ ...s, ...overrides[s.id], _file: 'data/imported/catalog.json' }))];
 }
 
 function validDate(value) {
@@ -69,7 +82,18 @@ export function validate(categories, sites, today = new Date().toISOString().sli
       if (urls.has(key)) fail('url 重复');
       urls.add(key);
     }
-    if (!['pending', 'verified', 'review', 'withdrawn'].includes(s.verification_status)) fail('verification_status 无效或缺失');
+    if (!['pending', 'sourced', 'verified', 'review', 'withdrawn'].includes(s.verification_status)) fail('verification_status 无效或缺失');
+    if (s.region != null && (typeof s.region !== 'string' || !/^(GLOBAL|[A-Z]{2})$/.test(s.region))) fail('region 必须是地区代码或 GLOBAL');
+    if (s.verification_status === 'sourced' || s.source != null) {
+      const source = s.source;
+      if (!source || !['homebrew-cask', 'hipo-universities'].includes(source.id) || !text(source.record) || !parseWebUrl(source.url)) fail('source 必须包含已支持的 id、record 与来源 url');
+      else {
+        const prefix = source.id === 'homebrew-cask' ? 'https://github.com/Homebrew/homebrew-cask/blob/' : 'https://github.com/Hipo/university-domains-list/blob/';
+        if (!source.url.startsWith(prefix) || !/^[a-f0-9]{40}\//.test(source.url.slice(prefix.length))) fail('source.url 必须固定到来源仓库的提交');
+      }
+      if (!validDate(s.collected_at) || s.collected_at > today) fail('collected_at 必须是有效的非未来日期');
+      if (s.verification_status === 'sourced' && (s.verified_at || s.reviewer || s.review_method || s.review_due_at || s.entries?.length || s.evidence?.length)) fail('来源收录不能携带核验结论');
+    }
     if (!Array.isArray(s.entries) || !Array.isArray(s.evidence)) {
       fail('entries/evidence 必须是列表');
       continue;
@@ -126,6 +150,7 @@ export function buildSearchIndex(sites, today) {
       id: s.id, n: s.name, u: s.url, d: s.description, c: s.category, a: s.aliases,
       p: [...new Set(names.filter((n) => /[\u3400-\u9fff]/.test(n)).flatMap(pinyinKeys).filter(Boolean))],
       v: status, due: s.review_due_at, checked: s.verified_at,
+      r: s.region || '', t: s.tags, source: s.source?.id,
       e: status === 'verified' ? s.entries : [],
       h: status === 'verified' ? [...new Set(s.entries.map((e) => hostOf(e.url)))] : [],
     };

@@ -1,7 +1,7 @@
 // Shared by browser, build, monitoring and tests. No implicit subdomain trust.
 const SUFFIX_RE = /(官方网站|官方网址|官网|官方|网址|网站|首页|入口|地址|登录|登陆|下载|文档|教程|源码|app)+$/i;
 const compact = (text) => String(text ?? '').trim().toLowerCase().replace(/\s+/g, '');
-export const STATUS_LABELS = { verified: '已核对来源', pending: '待审核', review: '待复核', withdrawn: '已撤销' };
+export const STATUS_LABELS = { verified: '已核对来源', sourced: '来源收录 · 未核验', pending: '待审核', review: '待复核', withdrawn: '已撤销' };
 
 export function effectiveStatus(status, due, today = new Date().toISOString().slice(0, 10)) {
   return status === 'verified' && (!due || due < today) ? 'review' : status;
@@ -72,26 +72,41 @@ function scoreText(q, value) {
   return text === q ? 100 : text.startsWith(q) ? 80 : text.includes(q) ? 60 : 0;
 }
 
-export function search(query, index, { includePending = false, limit = 20, today } = {}) {
+export function search(query, index, { includePending = false, includeSourced = false, limit = 20, today } = {}) {
   const raw = compact(query);
   const q = normalizeQuery(query);
   if (!q) return [];
   const results = [];
   for (const site of index) {
-    if (!includePending && !isVerified(site, today)) continue;
+    if (site.v === 'withdrawn' || (!includePending && !isVerified(site, today) && !(includeSourced && site.v === 'sourced'))) continue;
     let score = 0;
     for (const name of [site.n, ...site.a]) score = Math.max(score, scoreText(q, name), compact(name) === raw ? 110 : 0);
     if (/^[a-z0-9]+$/.test(q)) for (const p of site.p) {
       if (p === q) score = Math.max(score, 70);
       else if (q.length >= 2 && p.startsWith(q)) score = Math.max(score, 50);
     }
-    if (q.length >= 2 && site.h.some((h) => h.includes(q))) score = Math.max(score, 40);
+    if (q.length >= 2 && [...site.h, hostOf(site.u) || ''].some((h) => h.includes(q))) score = Math.max(score, 40);
+    if (q.length >= 2 && (site.t || []).some((t) => compact(t).includes(q))) score = Math.max(score, 25);
     if (q.length >= 2 && site.d.toLowerCase().includes(q)) score = Math.max(score, 15);
     if (score) results.push({ site, score });
   }
   results.sort((a, b) => Number(isVerified(b.site, today)) - Number(isVerified(a.site, today)) ||
     b.score - a.score || a.site.id.localeCompare(b.site.id));
   return results.slice(0, limit).map(({ site }) => site);
+}
+
+// Paged browsing is separate from the conservative verified-only search API.
+export function queryCatalog(query, index, { category = '', region = '', status = 'catalog', page = 1, pageSize = 24, today } = {}) {
+  const filtered = index.filter((s) => {
+    const current = effectiveStatus(s.v, s.due, today);
+    if (current === 'withdrawn' || (category && s.c !== category) || (region && s.r !== region)) return false;
+    return status === 'all' || (status === 'catalog' ? ['verified', 'sourced'].includes(current) : current === status);
+  });
+  const matched = query.trim() ? search(query, filtered, { includePending: true, limit: Infinity, today }) : filtered;
+  const size = Math.max(1, Math.min(100, Number.isFinite(pageSize) ? Math.floor(pageSize) : 24));
+  const pages = Math.max(1, Math.ceil(matched.length / size));
+  const currentPage = Math.max(1, Math.min(pages, Number.isFinite(page) ? Math.floor(page) : 1));
+  return { items: matched.slice((currentPage - 1) * size, currentPage * size), total: matched.length, page: currentPage, pages, pageSize: size };
 }
 
 export function preferredEntry(site, query, today) {
