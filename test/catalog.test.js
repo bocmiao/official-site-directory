@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { loadSites, loadCategories, validate, buildSearchIndex, ROOT } from '../scripts/lib/data.js';
+import { loadSites, loadSources, loadCategories, validate, buildSearchIndex, ROOT } from '../scripts/lib/data.js';
 import { importCatalog, identityUrl } from '../scripts/lib/import.js';
 import { catalogStats } from '../scripts/lib/stats.js';
 import { queryCatalog, checkHost, preferredEntry, hostOf } from '../src/search.js';
@@ -25,13 +25,14 @@ test('real catalog exceeds 2,000 new records and distinct hosts without promotin
   for (const s of imported) {
     assert.equal(s.verification_status, 'sourced');
     assert.ok(s.url.startsWith('https://'));
-    assert.match(s.source.url, /\/blob\/[a-f0-9]{40}\//);
+    if (s.source.id === 'ror') assert.match(s.source.snapshot, /^https:\/\/zenodo.org\/records\/\d+$/);
+    else assert.match(s.source.url, /\/blob\/[a-f0-9]{40}\//);
     assert.deepEqual(s.entries, []);
     assert.equal(s.verified_at, undefined);
   }
-  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/imported/sources.json')));
+  const manifest = loadSources();
   assert.equal(manifest.accepted, imported.length);
-  for (const source of manifest.sources) assert.ok(fs.readFileSync(path.join(ROOT, 'data/licenses', source.license_file), 'utf8').includes('Copyright'));
+  for (const source of manifest.sources) for (const file of [source.license_file, ...(source.additional_license_files || [])]) assert.ok(fs.readFileSync(path.join(ROOT, 'data/licenses', file), 'utf8').length > 500);
 });
 
 test('import is deterministic, de-duplicates HTTP/www variants, preserves curated rows and rejects unsuitable entries', () => {
@@ -56,6 +57,14 @@ test('provenance schema rejects unsupported sources and misleading verification 
   assert.ok(errors((s) => { s.source.id = 'unknown'; }).length);
   assert.ok(errors((s) => { s.verified_at = today; }).length);
   assert.ok(errors((s) => { s.collected_at = '2099-01-01'; }).length);
+});
+
+test('refreshing software does not confuse institution acronyms with product names', () => {
+  const institution = { id: 'school', name: 'Sample University', aliases: ['sample'], category: 'education',
+    source: { id: 'ror' }, url: 'https://school.edu/' };
+  assert.equal(convert([cask('sample')], [], [institution]).records.length, 1);
+  institution.url = 'https://sample.org/';
+  assert.equal(convert([cask('sample')], [], [institution]).records.length, 0);
 });
 
 test('editorial overrides survive imports and cannot silently grant verification', () => {

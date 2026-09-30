@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { ROOT, loadCategories, loadSites, buildSearchIndex, validate } from './lib/data.js';
+import { ROOT, loadCategories, loadSites, loadSources, buildSearchIndex, validate } from './lib/data.js';
 import { effectiveStatus, STATUS_LABELS, parseWebUrl } from '../src/search.js';
 import { catalogStats } from './lib/stats.js';
 
@@ -110,7 +110,7 @@ ${verified ? `<h2>选择所需入口</h2><ul class="entry-list">${site.entries.m
 ${external(e.url, e.label)}<span>${esc(e.region)} · ${esc(e.language)}</span><code>${esc(e.url)}</code>
 <small>依据：${site.evidence.map((item, i) => item.entry_ids.includes(e.id) ? `<a href="#evidence-${i}">${i + 1}</a>` : '').filter(Boolean).join('、')}</small>
 </li>`).join('')}</ul>` : `<h2>待核对地址</h2><code class="candidate-url">${esc(site.url)}</code>`}
-${site.source ? `<h2>收录来源</h2><p>${external(site.source.url, sourceById[site.source.id].name + ' · 固定版本记录')}</p><dl><dt>来源记录</dt><dd>${esc(site.source.record)}</dd><dt>采集日期</dt><dd>${esc(site.collected_at)}（不是核验日期）</dd><dt>来源许可证</dt><dd>${esc(sourceById[site.source.id].license)}</dd></dl><p>此地址来自第三方目录${site.source.id === 'homebrew-cask' ? '的 homepage 字段；收录不代表软件支持所有平台' : '的 web_pages 字段；收录不代表办学资质认证，名称与地址可能过时'}。<a href="../sources.html">查看来源与更新说明</a>。</p>` : ''}
+${site.source ? `<h2>收录来源</h2><p>${external(site.source.url, sourceById[site.source.id].name + (site.source.snapshot ? ' · 机构记录（可能更新）' : ' · 固定版本记录'))}${site.source.snapshot ? ` · ${external(site.source.snapshot, '本次使用的固定版本快照')}` : ''}</p><dl><dt>来源记录</dt><dd>${esc(site.source.record)}</dd><dt>采集日期</dt><dd>${esc(site.collected_at)}（不是核验日期）</dd><dt>来源许可证</dt><dd>${esc(sourceById[site.source.id].license)}</dd></dl><p>此地址来自第三方目录的 ${site.source.id === 'homebrew-cask' ? 'homepage' : site.source.id === 'ror' ? 'links[type=website]' : 'web_pages'} 字段，名称与地址可能过时。收录不代表品牌授权、办学资质或安全认证。<a href="../sources.html">查看来源与更新说明</a>。</p>${sourceById[site.source.id].attribution ? `<p class="muted">${esc(sourceById[site.source.id].attribution)}</p>` : ''}` : ''}
 <h2>核验依据</h2>
 ${site.evidence.length ? `<ol class="evidence-list">${site.evidence.map((e, i) => `<li id="evidence-${i}">
 ${external(e.url, e.title)}<p>${esc(e.relation)}</p><small>关联入口：${e.entry_ids.map((id) => esc(labels[id])).join('、')}</small></li>`).join('')}</ol>` : '<p>尚未补充能确认官方归属的原始依据。提交时请说明主体与网址的关系，并附上官方原始来源链接。</p>'}
@@ -136,8 +136,8 @@ function categoryPage(category, records, page, pageSize = 60) {
 function sourcesPage() {
   return layout({ title: '数据来源与质量', description: '公开目录规模、来源许可、过滤规则与核验边界。', route: 'sources.html', body:
     `<h1>数据来源与质量</h1><p>统计构建于 ${today}。${stats.total} 条记录中，${stats.status.verified || 0} 条已核对来源，${stats.status.sourced || 0} 条仅为来源收录。数字表示记录数量，不表示已验证官网数量。</p>
-    <h2>来源覆盖</h2><p>目前批量目录主要覆盖桌面软件与高校；软件来源偏重 macOS 生态，高校名单存在历史名称与更新滞后，不代表完整的全球或中文官网库。</p>
-    <ul class="source-list">${manifest.sources.map((s) => `<li><h3>${external(s.url, s.name)}</h3><p>${stats.sources[s.id] || 0} 条 · ${esc(s.license)} · 采集于 ${esc(manifest.collected_at)}</p><p><a href="./data/licenses/${s.license_file}">许可证全文</a> · ${external(s.download_url, '上游数据入口')}</p><p class="muted">每条详情保留来源记录和固定提交链接，快照 SHA-256 见来源清单。</p></li>`).join('')}</ul>
+    <h2>来源覆盖</h2><p>目前批量目录主要覆盖桌面软件、教育与研究机构；软件来源偏重 macOS 生态，机构名单可能存在历史名称与更新滞后，不代表完整的全球或中文官网库。ROR 本批仅收录 active 且类型包含 education 的机构；该状态是注册目录状态，不是本网核验结论。</p>
+    <ul class="source-list">${manifest.sources.map((s) => `<li><h3>${external(s.url, s.name)}</h3><p>${stats.sources[s.id] || 0} 条 · ${esc(s.license)} · 采集于 ${esc(s.collected_at)}</p><p><a href="./data/licenses/${s.license_file}">许可证全文</a>${(s.additional_license_files || []).map((file) => ` · <a href="./data/licenses/${file}">地区元数据许可</a>`).join('')} · ${external(s.download_url, '上游数据入口')}</p><p class="muted">每条详情保留来源记录和固定提交或版本快照，SHA-256 见来源清单。</p>${s.attribution ? `<p>${esc(s.attribution)}</p>` : ''}</li>`).join('')}</ul>
     <h2>清洗规则</h2><p>只批量收录上游明确列出的 HTTPS 首页；不把 HTTP 地址擅自改成 HTTPS。不导入安装包、字体、停用软件、版本变体、带凭据或参数的地址。按归一化首页去重，人工维护记录优先。HTTPS 只是收录条件，不证明网站归属或可用性。</p>
     <dl class="quality-counts"><dt>不同主机名</dt><dd>${stats.unique_hosts}</dd><dt>有来源链的批量记录</dt><dd>${stats.imported_with_source}</dd><dt>已核对具体入口</dt><dd>${stats.verified_entries}</dd></dl>
     <h2>数据下载</h2><p><a href="./data/catalog.json" download>完整目录 JSON</a> · <a href="./data/quality.json" download>质量统计 JSON</a> · <a href="./data/sources.json" download>来源版本与过滤统计</a></p><p>导出的字段和状态与页面一致，勿把 sourced 当作 verified。第三方派生字段遵循上游许可证；本项目原创内容暂未授予独立复用许可。</p><h2>发现问题</h2><p>详情页可提交纠错；维护者在独立修订文件保留更正或撤销记录，刷新来源不会清除修订。来源更新先经过校验和 PR 审阅，不自动发布。</p>` });
@@ -160,7 +160,7 @@ const sites = loadSites();
 const errors = validate(categories, sites);
 if (errors.length) throw new Error(errors.join('\n'));
 const catById = Object.fromEntries(categories.map((c) => [c.id, c]));
-const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/imported/sources.json'), 'utf8'));
+const manifest = loadSources();
 const sourceById = Object.fromEntries(manifest.sources.map((s) => [s.id, s]));
 const stats = catalogStats(sites, today);
 const indexJson = JSON.stringify(buildSearchIndex(sites, today));
@@ -180,7 +180,7 @@ write('guide.html', guidePage());
 write('data/catalog.json', JSON.stringify(sites.map(({ _file, ...site }) => site)));
 write('data/quality.json', JSON.stringify(stats, null, 2));
 write('data/sources.json', JSON.stringify(manifest, null, 2));
-for (const source of manifest.sources) write(`data/licenses/${source.license_file}`, fs.readFileSync(path.join(ROOT, 'data/licenses', source.license_file), 'utf8'));
+for (const source of manifest.sources) for (const file of [source.license_file, ...(source.additional_license_files || [])]) write(`data/licenses/${file}`, fs.readFileSync(path.join(ROOT, 'data/licenses', file), 'utf8'));
 write('assets/sites.json', indexJson);
 for (const [file, content] of Object.entries(sourceFiles)) write(`assets/${file}`, file === 'app.js' ? content.replace("'./search.js'", `'./search.js?v=${buildVersion}'`) : content);
 if (SITE_URL) {

@@ -25,7 +25,8 @@ const universityUrl = `https://raw.githubusercontent.com/Hipo/university-domains
 if (!args.includes('--refresh') && (!option('--casks') || !option('--universities'))) throw new Error('Use --refresh for network import, or provide --casks and --universities snapshot paths');
 const caskText = option('--casks') ? fs.readFileSync(option('--casks'), 'utf8') : await download(caskUrl);
 const universityText = option('--universities') ? fs.readFileSync(option('--universities'), 'utf8') : await download(universityUrl);
-const curated = loadSites().filter((s) => !s._file.startsWith('data/imported/'));
+// Other import batches and manually curated rows remain intact and win deduplication.
+const curated = loadSites().filter((s) => s._file !== 'data/imported/catalog.json');
 const result = importCatalog({ casks: JSON.parse(caskText), universities: JSON.parse(universityText), universityRevision: revision, retrievedAt: date, curated });
 const overridePath = path.join(ROOT, 'data', 'overrides.json');
 const overrides = fs.existsSync(overridePath) ? JSON.parse(fs.readFileSync(overridePath, 'utf8')) : {};
@@ -44,8 +45,12 @@ const manifest = { schema_version: 1, collected_at: date, accepted: result.recor
     { id: 'hipo-universities', name: 'Hipo University Domains List', url: 'https://github.com/Hipo/university-domains-list',
       download_url: universityUrl, sha256: digest(universityText), license: 'MIT', license_file: 'hipo-universities.txt', revision },
   ] };
-fs.mkdirSync(dir, { recursive: true });
-// All downloads, normalization, schema and count checks finish before replacing snapshots.
-fs.writeFileSync(path.join(dir, 'catalog.json'), JSON.stringify(result.records, null, 2) + '\n');
-fs.writeFileSync(lockPath, JSON.stringify(manifest, null, 2) + '\n');
-console.log(JSON.stringify({ accepted: manifest.accepted, total: curated.length + manifest.accepted, skipped: result.skipped }, null, 2));
+const content = JSON.stringify(result.records, null, 2) + '\n';
+const changed = !fs.existsSync(path.join(dir, 'catalog.json')) || fs.readFileSync(path.join(dir, 'catalog.json'), 'utf8') !== content;
+if (!args.includes('--dry-run')) {
+  fs.mkdirSync(dir, { recursive: true });
+  // All downloads, normalization, schema and count checks finish before replacing snapshots.
+  fs.writeFileSync(path.join(dir, 'catalog.json'), content);
+  fs.writeFileSync(lockPath, JSON.stringify(manifest, null, 2) + '\n');
+}
+console.log(JSON.stringify({ dry_run: args.includes('--dry-run'), changed, accepted: manifest.accepted, total: curated.length + manifest.accepted, skipped: result.skipped }, null, 2));

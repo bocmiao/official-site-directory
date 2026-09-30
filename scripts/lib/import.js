@@ -14,7 +14,10 @@ const aliases = (values, name) => [...new Set(values.map(clean).filter((s) => s 
 export function importCatalog({ casks, universities, universityRevision, retrievedAt, curated = [] }) {
   if (!Array.isArray(casks) || !Array.isArray(universities) || !/^[a-f0-9]{40}$/.test(universityRevision)) throw new Error('Invalid source snapshot');
   const seen = new Set(curated.map((s) => identityUrl(s.url)));
-  const names = new Set(curated.flatMap((s) => [s.name, ...(s.aliases || [])]).map((s) => clean(s).toLowerCase()));
+  // Institution acronyms (e.g. a university's short name) must not suppress
+  // unrelated software. Homepage deduplication still spans every source.
+  const names = new Set(curated.filter((s) => !s.source || s.category === 'software')
+    .flatMap((s) => [s.name, ...(s.aliases || [])]).map((s) => clean(s).toLowerCase()));
   const records = [];
   const skipped = {};
   const reject = (reason) => { skipped[reason] = (skipped[reason] || 0) + 1; };

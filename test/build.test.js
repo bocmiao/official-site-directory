@@ -41,7 +41,15 @@ test('publication requires an explicit HTTPS site URL; candidates stay out of si
   assert.equal(index.length, stats.total);
   assert.ok(stats.status.sourced >= 2000);
   assert.ok(Buffer.byteLength(read('index.html')) < 40000, 'homepage must not inline thousands of rows');
-  assert.ok(Buffer.byteLength(read('assets/sites.json')) < 2500000, 'search payload budget');
+  assert.ok(Buffer.byteLength(read('assets/sites.json')) < 12000000, 'full search payload budget for 20k+ records');
+  assert.ok(Buffer.byteLength(read('assets/sites.json')) / index.length < 500, 'per-record search payload budget');
+  const ror = read('site/ror-03cve4549.html');
+  assert.match(ror, /清华大学/);
+  assert.match(ror, /22902037/);
+  assert.match(ror, /GeoNames/);
+  assert.doesNotMatch(ror, /href="https:\/\/www.tsinghua.edu.cn/);
+  assert.match(read('data/licenses/ror-cc0.txt'), /CC0 1.0 Universal/);
+  assert.match(read('data/licenses/geonames-cc-by-4.0.txt'), /Attribution 4.0/);
   const category = read('category/software/1.html');
   assert.match(category, /href="2.html"/);
   assert.match(category, /href="\.\.\/\.\.\/site\//);

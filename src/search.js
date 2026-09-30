@@ -1,6 +1,17 @@
 // Shared by browser, build, monitoring and tests. No implicit subdomain trust.
 const SUFFIX_RE = /(官方网站|官方网址|官网|官方|网址|网站|首页|入口|地址|登录|登陆|下载|文档|教程|源码|app)+$/i;
 const compact = (text) => String(text ?? '').trim().toLowerCase().replace(/\s+/g, '');
+// Index objects are immutable after loading. Cache normalized text rather than
+// parsing 20,000+ homepages and allocating alias arrays on every keystroke.
+const documents = new WeakMap();
+function searchDocument(site) {
+  if (!documents.has(site)) documents.set(site, {
+    names: [site.n, ...site.a].map(compact),
+    hosts: [...site.h, hostOf(site.u) || ''],
+    tags: (site.t || []).map(compact), description: site.d.toLowerCase(),
+  });
+  return documents.get(site);
+}
 export const STATUS_LABELS = { verified: '已核对来源', sourced: '来源收录 · 未核验', pending: '待审核', review: '待复核', withdrawn: '已撤销' };
 
 export function effectiveStatus(status, due, today = new Date().toISOString().slice(0, 10)) {
@@ -47,7 +58,9 @@ export function queryPurpose(query) {
 export function resolveInput(input, index) {
   const raw = String(input ?? '').trim();
   const explicit = /^[a-z][a-z0-9+.-]*:\/\//i.test(raw) || raw.includes('@');
-  if (!explicit && index.some((s) => [s.n, ...s.a].some((n) => compact(n) === compact(raw) || compact(n) === normalizeQuery(raw)))) return { kind: 'search' };
+  const normalized = compact(raw);
+  const query = normalizeQuery(raw);
+  if (!explicit && index.some((s) => searchDocument(s).names.some((n) => n === normalized || n === query))) return { kind: 'search' };
   const host = extractHost(raw);
   if (host) return { kind: 'host', host };
   return { kind: explicit ? 'invalid' : 'search' };
@@ -67,27 +80,27 @@ export function checkHost(host, index, today) {
   return { status: similar.length ? 'similar' : 'unknown', host: normalized, matches: similar };
 }
 
-function scoreText(q, value) {
-  const text = compact(value);
+function scoreText(q, text) {
   return text === q ? 100 : text.startsWith(q) ? 80 : text.includes(q) ? 60 : 0;
 }
 
-export function search(query, index, { includePending = false, includeSourced = false, limit = 20, today } = {}) {
+export function search(query, index, { includePending = false, includeSourced = false, limit = 20, today = new Date().toISOString().slice(0, 10) } = {}) {
   const raw = compact(query);
   const q = normalizeQuery(query);
   if (!q) return [];
   const results = [];
   for (const site of index) {
     if (site.v === 'withdrawn' || (!includePending && !isVerified(site, today) && !(includeSourced && site.v === 'sourced'))) continue;
+    const document = searchDocument(site);
     let score = 0;
-    for (const name of [site.n, ...site.a]) score = Math.max(score, scoreText(q, name), compact(name) === raw ? 110 : 0);
+    for (const name of document.names) score = Math.max(score, scoreText(q, name), name === raw ? 110 : 0);
     if (/^[a-z0-9]+$/.test(q)) for (const p of site.p) {
       if (p === q) score = Math.max(score, 70);
       else if (q.length >= 2 && p.startsWith(q)) score = Math.max(score, 50);
     }
-    if (q.length >= 2 && [...site.h, hostOf(site.u) || ''].some((h) => h.includes(q))) score = Math.max(score, 40);
-    if (q.length >= 2 && (site.t || []).some((t) => compact(t).includes(q))) score = Math.max(score, 25);
-    if (q.length >= 2 && site.d.toLowerCase().includes(q)) score = Math.max(score, 15);
+    if (q.length >= 2 && document.hosts.some((h) => h.includes(q))) score = Math.max(score, 40);
+    if (q.length >= 2 && document.tags.some((t) => t.includes(q))) score = Math.max(score, 25);
+    if (q.length >= 2 && document.description.includes(q)) score = Math.max(score, 15);
     if (score) results.push({ site, score });
   }
   results.sort((a, b) => Number(isVerified(b.site, today)) - Number(isVerified(a.site, today)) ||
@@ -96,7 +109,7 @@ export function search(query, index, { includePending = false, includeSourced = 
 }
 
 // Paged browsing is separate from the conservative verified-only search API.
-export function queryCatalog(query, index, { category = '', region = '', status = 'catalog', page = 1, pageSize = 24, today } = {}) {
+export function queryCatalog(query, index, { category = '', region = '', status = 'catalog', page = 1, pageSize = 24, today = new Date().toISOString().slice(0, 10) } = {}) {
   const filtered = index.filter((s) => {
     const current = effectiveStatus(s.v, s.due, today);
     if (current === 'withdrawn' || (category && s.c !== category) || (region && s.r !== region)) return false;

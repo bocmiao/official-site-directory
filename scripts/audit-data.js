@@ -4,13 +4,18 @@ import { performance } from 'node:perf_hooks';
 import { ROOT, loadSites, loadCategories, validate, buildSearchIndex } from './lib/data.js';
 import { catalogStats } from './lib/stats.js';
 import { queryCatalog } from '../src/search.js';
-import { identityUrl } from './lib/import.js';
+import { identityUrl, digest } from './lib/import.js';
 
 const sites = loadSites();
 const errors = validate(loadCategories(), sites);
 const imported = sites.filter((s) => s.source);
 if (imported.length < 2000) errors.push('Imported catalog below 2,000 records');
 if (new Set(imported.map((s) => identityUrl(s.url))).size !== imported.length) errors.push('Duplicate imported homepage');
+const ror = sites.filter((s) => s.source?.id === 'ror');
+const baseline = sites.filter((s) => s.source?.id !== 'ror');
+const batch = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/imported/ror-source.json')));
+if (ror.length < 10000 || sites.length < 14943) errors.push('Catalog must preserve the baseline plus at least 10,000 additional ROR records');
+if (baseline.length !== batch.baseline_count || digest(baseline.map((s) => s.id).sort().join('\n')) !== batch.baseline_ids_sha256) errors.push('Baseline IDs changed: review the expansion batch accounting');
 if (errors.length) throw new Error(errors.join('\n'));
 const stats = catalogStats(sites);
 const index = buildSearchIndex(sites);
@@ -23,6 +28,7 @@ for (let round = 0; round < 5; round++) for (const query of queries) {
 }
 timings.sort((a, b) => a - b);
 const report = { ...stats, search_index_bytes: Buffer.byteLength(JSON.stringify(index)),
+  expansion: { baseline: batch.baseline_count, added: ror.length, removed: 0, net_added: sites.length - batch.baseline_count },
   search_benchmark: { node: process.version, samples: timings.length,
     median_ms: +timings[Math.floor(timings.length / 2)].toFixed(2), p95_ms: +timings[Math.floor(timings.length * 0.95)].toFixed(2) } };
 // Report is a local build artifact, never an assertion that websites are verified.

@@ -33,9 +33,12 @@ export function loadSites(dataDir = DATA_DIR) {
       category: path.basename(file, '.yaml'), _file: `data/sites/${file}`,
     }));
   });
-  const imported = path.join(dataDir, 'imported', 'catalog.json');
-  const records = fs.existsSync(imported) ? JSON.parse(fs.readFileSync(imported, 'utf8')) : [];
-  if (!Array.isArray(records)) throw new Error('Imported catalog must be an array');
+  const records = ['catalog.json', 'ror.json'].flatMap((file) => {
+    const imported = path.join(dataDir, 'imported', file);
+    const values = fs.existsSync(imported) ? JSON.parse(fs.readFileSync(imported, 'utf8')) : [];
+    if (!Array.isArray(values)) throw new Error('Imported catalog must be an array');
+    return values.map((s) => ({ ...s, _file: `data/imported/${file}` }));
+  });
   const overrideFile = path.join(dataDir, 'overrides.json');
   const overrides = fs.existsSync(overrideFile) ? JSON.parse(fs.readFileSync(overrideFile, 'utf8')) : {};
   const curatedIds = new Set(curated.map((s) => s.id));
@@ -45,7 +48,16 @@ export function loadSites(dataDir = DATA_DIR) {
     if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some((key) => !['aliases', 'name', 'description', 'tags', 'verification_status'].includes(key))) throw new Error(`Invalid override: ${id}`);
     if (value.verification_status && !['pending', 'review', 'withdrawn'].includes(value.verification_status)) throw new Error(`Overrides cannot grant verification: ${id}`);
   }
-  return [...curated, ...records.filter((s) => !curatedIds.has(s.id)).map((s) => ({ ...s, ...overrides[s.id], _file: 'data/imported/catalog.json' }))];
+  return [...curated, ...records.filter((s) => !curatedIds.has(s.id)).map((s) => ({ ...s, ...overrides[s.id] }))];
+}
+
+export function loadSources(dataDir = DATA_DIR) {
+  const batches = ['sources.json', 'ror-source.json'].flatMap((file) => {
+    const target = path.join(dataDir, 'imported', file);
+    return fs.existsSync(target) ? [JSON.parse(fs.readFileSync(target, 'utf8'))] : [];
+  });
+  return { schema_version: 2, accepted: batches.reduce((n, b) => n + b.accepted, 0),
+    sources: batches.flatMap((b) => b.sources.map((s) => ({ ...s, collected_at: b.collected_at }))), batches };
 }
 
 function validDate(value) {
@@ -86,8 +98,10 @@ export function validate(categories, sites, today = new Date().toISOString().sli
     if (s.region != null && (typeof s.region !== 'string' || !/^(GLOBAL|[A-Z]{2})$/.test(s.region))) fail('region 必须是地区代码或 GLOBAL');
     if (s.verification_status === 'sourced' || s.source != null) {
       const source = s.source;
-      if (!source || !['homebrew-cask', 'hipo-universities'].includes(source.id) || !text(source.record) || !parseWebUrl(source.url)) fail('source 必须包含已支持的 id、record 与来源 url');
-      else {
+      if (!source || !['homebrew-cask', 'hipo-universities', 'ror'].includes(source.id) || !text(source.record) || !parseWebUrl(source.url)) fail('source 必须包含已支持的 id、record 与来源 url');
+      else if (source.id === 'ror') {
+        if (!/^https:\/\/ror\.org\/0[a-z0-9]{6}\d{2}$/.test(source.url) || source.record !== source.url || !/^https:\/\/zenodo\.org\/records\/[1-9]\d*$/.test(source.snapshot || '')) fail('ROR 记录必须包含机构 ID 与固定版本快照');
+      } else {
         const prefix = source.id === 'homebrew-cask' ? 'https://github.com/Homebrew/homebrew-cask/blob/' : 'https://github.com/Hipo/university-domains-list/blob/';
         if (!source.url.startsWith(prefix) || !/^[a-f0-9]{40}\//.test(source.url.slice(prefix.length))) fail('source.url 必须固定到来源仓库的提交');
       }
