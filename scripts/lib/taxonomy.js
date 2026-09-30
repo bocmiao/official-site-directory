@@ -1,6 +1,6 @@
 // Discovery labels are editorial rules, never evidence of official identity.
 export const TOPICS = [
-  ['dev', 'software', '开发与编程', /开发|编程|编辑器|版本控制|\b(ide|code editor|text editor|developer|development|programming|debugger|database client|sql|terminal|git client|api client|command-line)\b/i],
+  ['dev', 'software', '开发与编程', /开发工具|开发环境|开发者|软件开发|前端开发|后端开发|编程|编辑器|版本控制|\b(ide|code editor|text editor|developer|development|programming|debugger|database client|sql|terminal|git client|api client|command-line)\b/i],
   ['browser', 'software', '浏览与搜索', /浏览器|\b(browser|web search|search engine)\b/i],
   ['security', 'software', '隐私与安全', /密码|安全|\b(password|encrypt|firewall|antivirus|privacy|vpn|security)\b/i],
   ['design', 'software', '设计与创作', /设计|绘图|\b(design|drawing|illustration|animation|3d model|cad|photo editor|image editor)\b/i],

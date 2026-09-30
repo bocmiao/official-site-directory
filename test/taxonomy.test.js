@@ -11,6 +11,8 @@ test('reference classification preserves identity and ambiguous records have a f
   const s = { id: 'example', category: 'software', name: 'Example', aliases: [], description: 'A web browser', tags: [], verification_status: 'sourced' };
   assert.equal(classify(s).subcategory, 'browser');
   assert.equal(classify({ ...s, description: 'Example application' }).subcategory, 'software-other');
+  assert.equal(classify({ ...s, description: 'Mozilla 开发的浏览器。' }).subcategory, 'browser');
+  assert.ok(!classify({ ...s, description: 'Mozilla 开发的浏览器。' }).tags.includes('开发与编程'));
   assert.equal(classify(s).verification_status, 'sourced');
   assert.deepEqual(classify(classify(s)), classify(s));
   assert.ok(sites.every((s) => s.subcategory && s.tags.length));
