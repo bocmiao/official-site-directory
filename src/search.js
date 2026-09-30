@@ -6,7 +6,7 @@ const compact = (text) => String(text ?? '').trim().toLowerCase().replace(/\s+/g
 const documents = new WeakMap();
 function searchDocument(site) {
   if (!documents.has(site)) documents.set(site, {
-    names: [site.n, ...site.a].map(compact),
+    names: [site.n, site.o || '', ...site.a].filter(Boolean).map(compact),
     hosts: [...site.h, hostOf(site.u) || ''],
     tags: (site.t || []).map(compact), description: [site.d, site.loc || ''].join(' ').toLowerCase(),
   });
@@ -18,6 +18,12 @@ export function effectiveStatus(status, due, today = new Date().toISOString().sl
   return status === 'verified' && (!due || due < today) ? 'review' : status;
 }
 export const isVerified = (site, today) => effectiveStatus(site.v, site.due, today) === 'verified';
+
+// Domestic services first when browsing; explicit text search still ranks by match.
+export function compareDirectory(a, b) {
+  const order = (s) => s.source === 'curated' ? 0 : s.c === 'institutions-cn' ? 2 : s.c === 'institutions-hmt' ? 3 : s.c === 'institutions-global' ? 4 : 1;
+  return Number(isVerified(b)) - Number(isVerified(a)) || order(a) - order(b) || a.n.localeCompare(b.n, 'zh-CN') || a.id.localeCompare(b.id);
+}
 
 export function parseWebUrl(value) {
   if (typeof value !== 'string' || !/^https?:\/\//i.test(value) || /[\s\\]/.test(value)) return null;

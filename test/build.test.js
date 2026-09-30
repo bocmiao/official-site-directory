@@ -39,10 +39,17 @@ test('publication requires an explicit HTTPS site URL; candidates stay out of si
   const stats = JSON.parse(read('data/quality.json'));
   assert.equal(exported.length, stats.total);
   assert.equal(index.length, stats.total);
+  const harvard = exported.find((s) => s.name === 'Harvard University');
+  assert.match(read(`site/${harvard.id}.html`), /哈佛大学/);
+  assert.match(read(`site/${harvard.id}.html`), /原名：Harvard University/);
+  assert.match(read(`site/${harvard.id}.html`), /维基数据固定版本/);
+  assert.equal(JSON.parse(read('data/localization.json')).coverage.wikidata, 4116);
+  assert.match(read('category/education/1.html'), /教育考试服务/);
+  assert.doesNotMatch(read('category/education/1.html'), /Harvard University/);
   assert.ok(stats.status.sourced >= 2000);
   assert.ok(Buffer.byteLength(read('index.html')) < 40000, 'homepage must not inline thousands of rows');
   assert.ok(Buffer.byteLength(read('assets/sites.json')) < 12000000, 'full search payload budget for 20k+ records');
-  assert.ok(Buffer.byteLength(read('assets/sites.json')) / index.length < 500, 'per-record search payload budget');
+  assert.ok(Buffer.byteLength(read('assets/sites.json')) / index.length < 550, 'bilingual names and pinyin stay within the 12 MB total budget');
   const ror = read('site/ror-03cve4549.html');
   assert.match(ror, /清华大学/);
   assert.match(ror, /22902037/);

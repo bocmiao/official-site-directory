@@ -27,14 +27,18 @@ const subjects = [
 ];
 
 export function classify(site) {
+  if (site.category === 'education' && ['ror', 'hipo-universities'].includes(site.source?.id)) {
+    site = { ...site, category: site.region === 'CN' ? 'institutions-cn' : ['HK', 'MO', 'TW'].includes(site.region) ? 'institutions-hmt' : 'institutions-global' };
+  }
+  const isInstitution = site.category.startsWith('institutions-');
   const topicText = [site.name, ...(site.aliases || []), ...(site.category === 'software' ? [site.description, ...(site.tags || [])] : [])].join(' ');
-  const candidates = TOPICS.filter((t) => t.category === site.category);
+  const candidates = TOPICS.filter((t) => t.category === (isInstitution ? 'education' : site.category) && (isInstitution || site.category !== 'education'));
   const editorialTopic = ({ nodejs: 'dev', git: 'dev', vscode: 'dev', python: 'dev', '7zip': 'utility' })[site.id];
   const matches = candidates.filter((t) => t.id === editorialTopic || t.pattern?.test(topicText));
   const topic = matches[0] || candidates.find((t) => !t.pattern);
   const tags = [...(site.tags || []), ...matches.map((t) => t.name)];
-  if (!candidates.length) tags.push(({ gov: '政务服务', finance: '银行金融', telecom: '生活服务', travel: '出行交通', shopping: '购物电商', social: '社交与内容', devices: '数码品牌' })[site.category] || site.category);
-  if (site.category === 'education') for (const [label, pattern] of subjects) if (pattern.test(topicText)) tags.push(label);
+  if (!candidates.length) tags.push(({ education: '教育考试服务', gov: '政务服务', finance: '银行金融', telecom: '生活服务', travel: '出行交通', shopping: '购物电商', social: '社交与内容', devices: '数码品牌' })[site.category] || site.category);
+  if (isInstitution) for (const [label, pattern] of subjects) if (pattern.test(topicText)) tags.push(label);
   if (topic && !matches.length) tags.push(topic.name);
   return { ...site, subcategory: topic?.id || site.category, tags: [...new Set(tags)].sort((a, b) => a.localeCompare(b, 'zh-CN')),
     classification: 'rules-v1' };

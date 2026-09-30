@@ -1,4 +1,4 @@
-import { queryCatalog, resolveInput, checkHost, preferredEntry, isVerified, effectiveStatus, STATUS_LABELS, hostOf, parseWebUrl } from './search.js';
+import { queryCatalog, resolveInput, checkHost, preferredEntry, compareDirectory, effectiveStatus, STATUS_LABELS, hostOf, parseWebUrl } from './search.js';
 
 const $ = (selector) => document.querySelector(selector);
 const input = $('#q');
@@ -15,6 +15,7 @@ const filterFields = { category, topic, region, tag, source, status };
 const topicOptions = [...topic.options].map((o) => ({ value: o.value, text: o.textContent, category: o.dataset.category }));
 const sourceNames = Object.fromEntries([...source.options].map((o) => [o.value, o.textContent]));
 const regionNames = Object.fromEntries([...region.options].map((o) => [o.value, o.textContent]));
+const nameLabels = { source: '来源中文名', existing: '已有中文名', wikidata: '维基数据中文名', editorial: '参考译名', machine: '机器译名，待校对', retained: '专名保留原文' };
 const clear = $('#clear-filters');
 const results = $('#results');
 const verdict = $('#verdict');
@@ -51,6 +52,8 @@ function card(site, query) {
   return el('li', { class: 'card' },
     el('a', { class: 'card-main', href: entry?.url ?? detail, ...(entry ? { target: '_blank', rel: 'noopener noreferrer' } : {}) },
       el('span', { class: 'card-name' }, site.n),
+      ...(site.o ? [el('span', { class: 'card-original', lang: 'und' }, site.o)] : []),
+      ...(site.lm && !['source', 'existing'].includes(site.lm) ? [el('span', { class: 'name-method' }, nameLabels[site.lm])] : []),
       el('span', { class: `card-host ${entry ? '' : 'host-unverified'}` }, hostOf(entry?.url ?? site.u) || '地址待核对'),
       el('span', { class: 'card-desc' }, site.d),
       ...(entry ? [el('span', { class: 'entry-purpose' }, `${entry.label} · ${entry.region}`)] : [])),
@@ -113,17 +116,17 @@ function run() {
   previous.disabled = page <= 1;
   next.disabled = page >= pages;
   pageInfo.textContent = `第 ${page} / ${pages} 页`;
-  activeFilters.replaceChildren(...Object.entries(filterFields).filter(([key, field]) => field.value && !(key === 'status' && field.value === 'catalog')).map(([key, field]) => {
+  activeFilters.replaceChildren(...Object.entries(filterFields).filter(([key, field]) => field.value && !(key === 'status' && field.value === 'all')).map(([key, field]) => {
     const label = field.selectedOptions[0]?.textContent || field.value;
     const button = el('button', { type: 'button', 'aria-label': `移除筛选：${label}` }, `${label} ×`);
-    button.addEventListener('click', () => { field.value = key === 'status' ? 'catalog' : ''; if (key === 'category') updateFacets(); page = 1; run(); });
+    button.addEventListener('click', () => { field.value = key === 'status' ? 'all' : ''; if (key === 'category') updateFacets(); page = 1; run(); });
     return button;
   }));
 }
 
 function updateFacets() {
   const selectedTopic = topic.value;
-  topic.replaceChildren(...topicOptions.filter((o) => !o.value || !category.value || o.category === category.value).map((o) => el('option', { value: o.value }, o.text)));
+  topic.replaceChildren(...topicOptions.filter((o) => !o.value || !category.value || o.category?.split(' ').includes(category.value)).map((o) => el('option', { value: o.value }, o.text)));
   topic.value = [...topic.options].some((o) => o.value === selectedTopic) ? selectedTopic : '';
   const selectedTag = tag.value;
   const counts = new Map();
@@ -143,7 +146,7 @@ async function load() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     if (!Array.isArray(data) || !data.every((s) => s && typeof s.id === 'string' && /^[a-z0-9-]+$/.test(s.id) && typeof s.n === 'string' && typeof s.d === 'string' && typeof s.u === 'string' && Array.isArray(s.e) && Array.isArray(s.h) && Array.isArray(s.a) && Array.isArray(s.p) && Object.hasOwn(STATUS_LABELS, s.v))) throw new Error('Invalid index');
-    index = data.sort((a, b) => Number(isVerified(b)) - Number(isVerified(a)) || a.n.localeCompare(b.n, 'zh-CN'));
+    index = data.sort(compareDirectory);
     loaded = true;
     controls.forEach((control) => { control.disabled = false; });
     updateFacets();
@@ -177,7 +180,7 @@ input.addEventListener('compositionend', () => { composing = false; searchChange
 input.addEventListener('input', searchChanged);
 for (const filter of [...Object.values(filterFields), sort]) filter.addEventListener('change', () => { if (filter === category) updateFacets(); page = 1; run(); });
 function resetFilters() {
-  input.value = ''; Object.values(filterFields).forEach((field) => { field.value = ''; }); status.value = 'catalog'; sort.value = 'relevance'; page = 1; updateFacets();
+  input.value = ''; Object.values(filterFields).forEach((field) => { field.value = ''; }); status.value = 'all'; sort.value = 'relevance'; page = 1; updateFacets();
 }
 clear.addEventListener('click', () => {
   clearTimeout(timer);
@@ -187,7 +190,9 @@ clear.addEventListener('click', () => {
 for (const button of quickButtons) button.addEventListener('click', () => {
   resetFilters();
   if (button.dataset.quick === 'verified') status.value = 'verified';
-  else if (button.dataset.quick === 'CN') { category.value = 'education'; region.value = 'CN'; }
+  else if (button.dataset.quick === 'education') category.value = 'education';
+  else if (button.dataset.quick === 'CN') { category.value = 'institutions-cn'; region.value = 'CN'; }
+  else if (button.dataset.quick === 'overseas') category.value = 'institutions-global';
   else if (button.dataset.quick === 'software') category.value = 'software';
   else tag.value = button.dataset.quick;
   updateFacets(); run();

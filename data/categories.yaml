@@ -5,7 +5,7 @@
   icon: 🏛️
   order: 1
 - id: education
-  name: 教育考试
+  name: 教育考试服务
   icon: 🎓
   order: 2
 - id: finance
@@ -36,3 +36,12 @@
   name: 手机与数码品牌
   icon: 📱
   order: 9
+- id: institutions-cn
+  name: 内地院校与机构
+  order: 10
+- id: institutions-hmt
+  name: 港澳台院校与机构
+  order: 11
+- id: institutions-global
+  name: 海外院校与机构
+  order: 12

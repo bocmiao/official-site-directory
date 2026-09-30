@@ -6,6 +6,7 @@ export function catalogStats(sites, today = new Date().toISOString().slice(0, 10
     status: countBy((s) => effectiveStatus(s.verification_status, s.review_due_at, today)),
     categories: countBy((s) => s.category), sources: countBy((s) => s.source?.id || 'curated'),
     subcategories: countBy((s) => s.subcategory || s.category),
+    localization: countBy((s) => s.localization?.method || 'not-localized'),
     tags: Object.fromEntries([...new Set(sites.flatMap((s) => s.tags))].sort().map((tag) => [tag, sites.filter((s) => s.tags.includes(tag)).length])),
     profile_coverage: { source_metadata: sites.filter((s) => s.profile).length,
       established: sites.filter((s) => s.profile?.established).length,

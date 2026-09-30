@@ -5,13 +5,14 @@ import yaml from 'js-yaml';
 import { pinyin } from 'pinyin-pro';
 import { effectiveStatus, hostOf, parseWebUrl } from '../../src/search.js';
 import { classify, TOPICS } from './taxonomy.js';
+import { displayName, displayDescription, validateLocalization } from './localization.js';
 
 export { hostOf };
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const DATA_DIR = path.join(ROOT, 'data');
 const ID_RE = /^[a-z0-9][a-z0-9-]*$/;
 const FIELDS = new Set(['id', 'name', 'url', 'aliases', 'description', 'note', 'icp', 'tags', 'owner',
-  'verification_status', 'verified_at', 'review_due_at', 'reviewer', 'review_method', 'evidence', 'entries', 'source', 'collected_at', 'region', 'profile', 'subcategory', 'classification']);
+  'verification_status', 'verified_at', 'review_due_at', 'reviewer', 'review_method', 'evidence', 'entries', 'source', 'collected_at', 'region', 'profile', 'subcategory', 'classification', 'localization']);
 const ENTRY_FIELDS = new Set(['id', 'label', 'purpose', 'url', 'region', 'language']);
 const EVIDENCE_FIELDS = new Set(['url', 'title', 'relation', 'entry_ids']);
 const text = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -22,7 +23,7 @@ export function loadCategories(dataDir = DATA_DIR) {
   return readYaml(path.join(dataDir, 'categories.yaml')).sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
 }
 
-export function loadSites(dataDir = DATA_DIR, { profiles = true } = {}) {
+export function loadSites(dataDir = DATA_DIR, { profiles = true, localization = true } = {}) {
   const dir = path.join(dataDir, 'sites');
   const curated = fs.readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().flatMap((file) => {
     const entries = readYaml(path.join(dir, file));
@@ -54,11 +55,17 @@ export function loadSites(dataDir = DATA_DIR, { profiles = true } = {}) {
   const profileData = profiles && fs.existsSync(profileFile) ? JSON.parse(fs.readFileSync(profileFile, 'utf8')) : null;
   if (profileData && (profileData.schema_version !== 1 || !profileData.records || typeof profileData.records !== 'object')) throw new Error('Invalid profiles schema');
   const ids = new Set(sites.map((s) => s.id));
+  const localizationFile = path.join(dataDir, 'localization/zh-CN.json');
+  const translations = localization && fs.existsSync(localizationFile) ? JSON.parse(fs.readFileSync(localizationFile, 'utf8')) : null;
+  if (translations && (translations.schema_version !== 1 || !translations.records || typeof translations.records !== 'object' || Array.isArray(translations.records))) throw new Error('Invalid localization schema');
+  for (const id of Object.keys(translations?.records || {})) if (!ids.has(id)) throw new Error(`Localization references missing record: ${id}`);
   for (const id of Object.keys(profileData?.records || {})) if (!ids.has(id)) throw new Error(`Profile references missing record: ${id}`);
   return sites.map((s) => {
     const profile = profileData?.records[s.id];
     if (profile && (profile.source_record !== s.source?.record || profile.homepage !== s.url || profile.collected_at !== s.collected_at)) throw new Error(`Stale profile; refresh source metadata: ${s.id}`);
-    return classify(profile ? { ...s, profile } : s);
+    const translated = translations?.records[s.id];
+    if (translated && !validateLocalization(translated, s)) throw new Error(`Invalid or stale localization: ${s.id}`);
+    return classify({ ...s, ...(profile ? { profile } : {}), ...(translated ? { localization: translated } : {}) });
   });
 }
 
@@ -71,7 +78,7 @@ export function loadSources(dataDir = DATA_DIR) {
     sources: batches.flatMap((b) => b.sources.map((s) => ({ ...s, collected_at: b.collected_at,
       ...(s.id === 'ror' && fs.existsSync(path.join(dataDir, 'profiles.json')) ? {
         license: 'CC0-1.0; location metadata CC-BY-4.0',
-        attribution: 'Research Organization Registry; country codes, city and subdivision names derived from GeoNames (https://www.geonames.org), CC BY 4.0. Coordinates are not retained.',
+        attribution: '机构资料来自全球研究机构注册目录（ROR）；国家代码、城市与行政区名称源自 GeoNames（https://www.geonames.org），遵循 CC BY 4.0。未收录经纬度。',
       } : {}) }))), batches };
 }
 
@@ -101,7 +108,8 @@ export function validate(categories, sites, today = new Date().toISOString().sli
     for (const key of ['name', 'description']) if (!text(s[key])) fail(`${key} 必填`);
     for (const key of ['aliases', 'tags']) if (!stringList(s[key])) fail(`${key} 必须是非空字符串列表`);
     if (!catIds.has(s.category)) fail('未知分类');
-    if (s.subcategory && s.subcategory !== s.category && !TOPICS.some((t) => t.id === s.subcategory && t.category === s.category)) fail('未知二级分类');
+    if (s.subcategory && s.subcategory !== s.category && !TOPICS.some((t) => t.id === s.subcategory && t.category === (s.category.startsWith('institutions-') ? 'education' : s.category))) fail('未知二级分类');
+    if (s.localization && !validateLocalization(s.localization, s)) fail('中文名称与原始记录不一致或字段无效');
     if (s.classification && s.classification !== 'rules-v1') fail('未知分类规则');
     if (s.profile) {
       const p = s.profile;
@@ -185,10 +193,11 @@ function pinyinKeys(text) {
 
 export function buildSearchIndex(sites, today) {
   return sites.filter((s) => s.verification_status !== 'withdrawn').map((s) => {
-    const names = [s.name, ...s.aliases];
+    const names = [...new Set([displayName(s), s.name, ...s.aliases])];
     const status = effectiveStatus(s.verification_status, s.review_due_at, today);
     return {
-      id: s.id, n: s.name, u: s.url, d: s.description, c: s.category, a: s.aliases,
+      id: s.id, n: displayName(s), o: displayName(s) === s.name ? undefined : s.name, lm: s.localization?.method,
+      u: s.url, d: displayDescription(s), c: s.category, a: s.aliases,
       p: [...new Set(names.filter((n) => /[\u3400-\u9fff]/.test(n)).flatMap(pinyinKeys).filter(Boolean))],
       v: status, due: s.review_due_at, checked: s.verified_at,
       r: s.region || '', t: s.tags, source: s.source?.id || 'curated', sc: s.subcategory,

@@ -93,9 +93,9 @@ test('catalog pagination and combined filters operate on all matches, not the fi
   assert.equal(first.items.length, 24);
   assert.equal(second.items.length, 24);
   assert.equal(new Set([...first.items, ...second.items].map((s) => s.id)).size, 48);
-  const filtered = queryCatalog('', index, { category: 'education', region: 'CN', status: 'sourced', today });
+  const filtered = queryCatalog('', index, { category: 'institutions-cn', region: 'CN', status: 'sourced', today });
   assert.ok(filtered.total >= 10);
-  assert.ok(filtered.items.every((s) => s.c === 'education' && s.r === 'CN' && s.v === 'sourced'));
+  assert.ok(filtered.items.every((s) => s.c === 'institutions-cn' && s.r === 'CN' && s.v === 'sourced'));
   const last = queryCatalog('university', index, { page: 99999, today });
   assert.ok(last.total > 20);
   assert.equal(last.page, last.pages);

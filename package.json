@@ -1,6 +1,6 @@
 {
   "name": "official-site-directory",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "description": "官网收录：查找有来源依据的官网与具体入口",
   "type": "module",
@@ -12,7 +12,8 @@
     "test": "node --test test/*.test.js",
     "import:data": "node scripts/import-data.js",
     "audit:data": "node scripts/audit-data.js",
-    "import:ror": "node scripts/import-ror.js"
+    "import:ror": "node scripts/import-ror.js",
+    "import:localization": "node scripts/import-localization.js"
   },
   "engines": {
     "node": ">=22"
