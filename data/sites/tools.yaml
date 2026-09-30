@@ -1,0 +1,177 @@
+- id: ilovepdf
+  name: iLovePDF PDF工具
+  url: https://www.ilovepdf.com/zh-cn
+  aliases:
+    - iLovePDF
+    - PDF转换
+    - PDF转Word
+    - 合并PDF
+    - 拆分PDF
+  description: 在线转换、合并、拆分和压缩 PDF 文件。
+  tags:
+    - PDF处理
+    - 文档转换
+    - 在线工具
+  region: GLOBAL
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.ilovepdf.com/zh-cn
+      region: 全球
+      language: und
+  evidence:
+    - url: https://www.ilovepdf.com/zh-cn
+      title: iLovePDF PDF工具公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: smallpdf
+  name: Smallpdf PDF工具
+  url: https://smallpdf.com/cn
+  aliases:
+    - Smallpdf
+    - PDF转换
+    - PDF转Word
+    - PDF压缩
+  description: 提供 PDF 转换、压缩、合并与编辑工具。
+  tags:
+    - PDF处理
+    - 文档转换
+    - 在线工具
+  region: GLOBAL
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://smallpdf.com/cn
+      region: 全球
+      language: und
+  evidence:
+    - url: https://smallpdf.com/cn
+      title: Smallpdf PDF工具公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: photopea
+  name: Photopea 在线图片编辑
+  url: https://www.photopea.com/
+  aliases:
+    - Photopea
+    - 在线修图
+    - 图片编辑
+    - PSD编辑
+  description: 在浏览器中编辑图片，支持图层、裁剪与 PSD 文件。
+  tags:
+    - 图片编辑
+    - 在线工具
+  region: GLOBAL
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.photopea.com/
+      region: 全球
+      language: und
+  evidence:
+    - url: https://www.photopea.com/
+      title: Photopea 在线图片编辑公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: tinypng
+  name: TinyPNG 图片压缩
+  url: https://tinypng.com/
+  aliases:
+    - TinyPNG
+    - 图片压缩
+    - PNG压缩
+    - JPG压缩
+  description: 提供 PNG、JPEG 和 WebP 图片压缩服务。
+  tags:
+    - 图片压缩
+    - 在线工具
+  region: GLOBAL
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://tinypng.com/
+      region: 全球
+      language: und
+  evidence:
+    - url: https://tinypng.com/
+      title: TinyPNG 图片压缩公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: excalidraw
+  name: Excalidraw 在线白板
+  url: https://excalidraw.com/
+  aliases:
+    - Excalidraw
+    - 手绘白板
+    - 在线白板
+  description: 在浏览器中使用白板绘图。
+  tags:
+    - 白板绘图
+    - 在线工具
+  region: GLOBAL
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://excalidraw.com/
+      region: 全球
+      language: und
+  evidence:
+    - url: https://excalidraw.com/
+      title: Excalidraw 在线白板公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: processon
+  name: ProcessOn 在线作图
+  url: https://www.processon.com/
+  aliases:
+    - ProcessOn
+    - 流程图
+    - 思维导图
+    - 在线画图
+  description: 在线绘制流程图和思维导图，支持协作。
+  tags:
+    - 流程图
+    - 思维导图
+    - 在线工具
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.processon.com/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.processon.com/
+      title: ProcessOn 在线作图公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home

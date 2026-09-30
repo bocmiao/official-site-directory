@@ -4,11 +4,25 @@ const compact = (text) => String(text ?? '').trim().toLowerCase().replace(/\s+/g
 // Index objects are immutable after loading. Cache normalized text rather than
 // parsing 20,000+ homepages and allocating alias arrays on every keystroke.
 const documents = new WeakMap();
+// Editorial equivalents describe a task, not the identity or trust of a site.
+const QUERY_GROUPS = [
+  ['网课', '慕课', '公开课', '在线课程', 'mooc'],
+  ['四级报名', '六级报名', '四六级报名'],
+  ['四级查分', '六级查分', '四六级查分'],
+  ['教师资格证报名', '教师资格报名', '教资报名'],
+  ['考研报名', '研究生报名'],
+  ['pdf合并', '合并pdf'], ['pdf拆分', '拆分pdf'],
+  ['pdf转换', 'pdf转换器', 'pdf转word'],
+  ['压缩图片', '图片压缩'], ['修图', '图片编辑', '在线修图'],
+  ['科技资讯', 'it资讯', '科技新闻'], ['游戏新闻', '游戏资讯'],
+  ['游戏商店', '游戏平台'], ['手游', '手机游戏'], ['主机游戏', '游戏主机'],
+];
+const CATEGORY_TERMS = { education: '教育 考试 学习', tools: '工具 在线工具', news: '新闻 资讯', games: '游戏' };
 function searchDocument(site) {
   if (!documents.has(site)) documents.set(site, {
     names: [site.n, site.o || '', ...site.a].filter(Boolean).map(compact),
     hosts: [...site.h, hostOf(site.u) || ''],
-    tags: (site.t || []).map(compact), description: [site.d, site.loc || ''].join(' ').toLowerCase(),
+    tags: (site.t || []).map(compact), description: compact([site.d, site.loc || '', CATEGORY_TERMS[site.c] || ''].join(' ')),
   });
   return documents.get(site);
 }
@@ -94,6 +108,9 @@ export function search(query, index, { includePending = false, includeSourced = 
   const raw = compact(query);
   const q = normalizeQuery(query);
   if (!q) return [];
+  const equivalents = QUERY_GROUPS.find((group) => group.includes(q))?.filter((term) => term !== q) || [];
+  const terms = [...new Set(String(query).trim().split(/\s+/).map(normalizeQuery)
+    .filter((term) => term && !/^(官网|官方|网站|下载|入口|地址|文档|教程)$/.test(term)))];
   const results = [];
   for (const site of index) {
     if (site.v === 'withdrawn' || (!includePending && !isVerified(site, today) && !(includeSourced && site.v === 'sourced'))) continue;
@@ -107,10 +124,14 @@ export function search(query, index, { includePending = false, includeSourced = 
     if (q.length >= 2 && document.hosts.some((h) => h.includes(q))) score = Math.max(score, 40);
     if (q.length >= 2 && document.tags.some((t) => t.includes(q))) score = Math.max(score, 25);
     if (q.length >= 2 && document.description.includes(q)) score = Math.max(score, 15);
+    const contains = (term) => document.names.some((n) => n.includes(term)) || document.tags.some((t) => t.includes(term)) || document.description.includes(term);
+    if (equivalents.some(contains)) score = Math.max(score, 30);
+    // Every supplied keyword must match. Do not turn an unknown word into an OR query.
+    if (terms.length > 1 && terms.every(contains)) score = Math.max(score, 35);
     if (score) results.push({ site, score });
   }
-  results.sort((a, b) => Number(isVerified(b.site, today)) - Number(isVerified(a.site, today)) ||
-    b.score - a.score || a.site.id.localeCompare(b.site.id));
+  results.sort((a, b) => b.score - a.score || Number(isVerified(b.site, today)) - Number(isVerified(a.site, today)) ||
+    Number(b.site.source === 'curated') - Number(a.site.source === 'curated') || a.site.id.localeCompare(b.site.id));
   return results.slice(0, limit).map(({ site }) => site);
 }
 

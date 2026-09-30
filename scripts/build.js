@@ -67,18 +67,19 @@ function indexPage(sites) {
   const sourced = sites.filter((s) => statusOf(s) === 'sourced');
   const regions = [...new Set(sites.map((s) => s.region).filter(Boolean))].sort((a, b) => regionName(a).localeCompare(regionName(b), 'zh-CN'));
   const body = `<h1>想找哪个官网？</h1>
-<p class="intro">按名称、别名或网址查找软件与机构。收录 ${sites.length.toLocaleString('zh-CN')} 条记录，来源与核验状态公开可查。</p>
-<p class="directory-note">教育考试服务、内地院校、港澳台及海外机构分开浏览。中文译名供检索参考，保留原名与来源。</p>
+<p class="intro">按名称、用途、别名或网址查找站点。收录 ${sites.length.toLocaleString('zh-CN')} 条记录，来源与核验状态公开可查。</p>
+<p class="directory-note">教育考试与学习、在线工具、新闻资讯和游戏分开浏览，院校另设目录。中文译名供检索参考，保留原名与来源。</p>
 <ul class="stats" aria-label="收录统计"><li><strong>${verified.length}</strong> 已核对来源</li><li><strong>${sourced.length.toLocaleString('zh-CN')}</strong> 来源收录，未核验</li><li><strong>${pending.length}</strong> 待审核或复核</li></ul>
 <div class="search" role="search">
 <label for="q">搜索名称或检查网址</label>
 <input id="q" type="search" autocomplete="off" maxlength="500" disabled
- placeholder="例如：Python 下载、火狐、上海交通大学" aria-describedby="search-help">
-<small id="search-help">支持中文、别名和拼音；粘贴网址可比对已登记的主机名。</small>
-<div class="quick-filters" aria-label="快捷浏览"><span>快速查阅</span><button type="button" data-quick="education" disabled>教育考试</button><button type="button" data-quick="CN" disabled>内地院校</button><button type="button" data-quick="software" disabled>软件工具</button><button type="button" data-quick="overseas" disabled>海外院校</button><button type="button" data-quick="verified" disabled>已核对入口</button></div>
+ placeholder="例如：四六级报名、PDF 转换、游戏平台" aria-describedby="search-help">
+<small id="search-help">支持中文、别名、拼音和空格分隔的多个关键词；粘贴网址可比对已登记的主机名。</small>
+<div class="quick-filters" aria-label="快捷浏览"><span>快速查阅</span><button type="button" data-quick="education" disabled>教育与学习</button><button type="button" data-quick="tools" disabled>在线工具</button><button type="button" data-quick="news" disabled>新闻资讯</button><button type="button" data-quick="games" disabled>游戏</button><button type="button" data-quick="CN" disabled>内地院校</button><button type="button" data-quick="software" disabled>软件工具</button><button type="button" data-quick="overseas" disabled>海外院校</button><button type="button" data-quick="verified" disabled>已核对入口</button></div>
+<div id="suggested-queries" class="quick-filters suggested-queries" aria-label="搜索示例"></div>
 <details id="filter-panel" class="filter-panel" open><summary>分类、地区与更多筛选</summary><div class="filters">
 <label for="category-filter">分类<select id="category-filter" disabled><option value="">全部分类</option>${categories.map((c) => `<option value="${c.id}">${esc(c.name)} (${stats.categories[c.id] || 0})</option>`).join('')}</select></label>
-<label for="topic-filter">细分目录<select id="topic-filter" disabled><option value="">全部细分目录</option>${TOPICS.map((t) => `<option value="${t.id}" data-category="${t.category === 'education' ? 'institutions-cn institutions-hmt institutions-global' : t.category}">${esc(t.name)}</option>`).join('')}</select></label>
+<label for="topic-filter">细分目录<select id="topic-filter" disabled><option value="">全部细分目录</option>${TOPICS.map((t) => `<option value="${t.id}" data-category="${t.category === 'institution' ? 'institutions-cn institutions-hmt institutions-global' : t.category}">${esc(t.name)}</option>`).join('')}</select></label>
 <label for="region-filter">地区<select id="region-filter" disabled><option value="">全部地区</option>${regions.map((r) => `<option value="${r}">${esc(regionName(r))}</option>`).join('')}</select></label>
 <label for="tag-filter">标签<select id="tag-filter" disabled><option value="">全部标签</option></select></label>
 <label for="source-filter">资料来源<select id="source-filter" disabled><option value="">全部来源</option><option value="curated">人工整理</option>${manifest.sources.map((s) => `<option value="${s.id}">${esc(sourceName(s))}</option>`).join('')}</select></label>
@@ -182,7 +183,7 @@ function sourcesPage() {
   return layout({ title: '数据来源与质量', description: '公开目录规模、来源许可、过滤规则与核验边界。', route: 'sources.html', body:
     `<h1>数据来源与质量</h1><p>统计构建于 ${today}。${stats.total} 条记录中，${stats.status.verified || 0} 条已核对来源，${stats.status.sourced || 0} 条仅为来源收录。数字表示记录数量，不表示已验证官网数量。</p>
     <h2>来源覆盖</h2><p>目前批量目录主要覆盖桌面软件、教育与研究机构；软件来源偏重 macOS 生态，机构名单可能存在历史名称与更新滞后，不代表完整的全球或中文官网库。ROR 本批仅收录 active 且类型包含 education 的机构；该状态是注册目录状态，不是本网核验结论。</p>
-    <h2>为什么院校这么多？</h2><p>早期将全球机构批量目录与教育考试服务放在同一个分类。现在拆为教育考试服务 ${stats.categories.education || 0} 条、内地院校与机构 ${stats.categories['institutions-cn'] || 0} 条、港澳台院校与机构 ${stats.categories['institutions-hmt'] || 0} 条、海外院校与机构 ${stats.categories['institutions-global'] || 0} 条。记录全部保留，数量不代表推荐程度。</p><h2>中文名称从哪里来？</h2><p>优先使用已有中文名称和维基数据中文标签，其余为本地模型生成的参考译名。机器译名尚未逐条人工校对；原名、来源记录和网址保持不变，仍支持原文搜索。维基数据标签按 CC0 提供，详情可查看所用版本。<a href="./data/localization.json" download>下载中文名称与翻译来源</a>。</p>
+    <h2>为什么院校这么多？</h2><p>早期将全球机构批量目录与教育考试服务放在同一个分类。现在拆为教育考试与学习 ${stats.categories.education || 0} 条、内地院校与机构 ${stats.categories['institutions-cn'] || 0} 条、港澳台院校与机构 ${stats.categories['institutions-hmt'] || 0} 条、海外院校与机构 ${stats.categories['institutions-global'] || 0} 条。记录全部保留，数量不代表推荐程度。</p><h2>中文名称从哪里来？</h2><p>优先使用已有中文名称和维基数据中文标签，其余为本地模型生成的参考译名。机器译名尚未逐条人工校对；原名、来源记录和网址保持不变，仍支持原文搜索。维基数据标签按 CC0 提供，详情可查看所用版本。<a href="./data/localization.json" download>下载中文名称与翻译来源</a>。</p>
     <ul class="source-list">${manifest.sources.map((s) => `<li><h3>${external(s.url, sourceName(s))}</h3><p>${stats.sources[s.id] || 0} 条 · ${esc(s.license)} · 采集于 ${esc(s.collected_at)}</p><p><a href="./data/licenses/${s.license_file}">许可证全文</a>${(s.additional_license_files || []).map((file) => ` · <a href="./data/licenses/${file}">地区元数据许可</a>`).join('')} · ${external(s.download_url, '上游数据入口')}</p><p class="muted">每条详情保留来源记录和固定提交或版本快照，SHA-256 见来源清单。</p>${s.attribution ? `<p>${esc(s.attribution)}</p>` : ''}</li>`).join('')}</ul>
     <h2>清洗规则</h2><p>只批量收录上游明确列出的 HTTPS 首页；不把 HTTP 地址擅自改成 HTTPS。不导入安装包、字体、停用软件、版本变体、带凭据或参数的地址。按归一化首页去重，人工维护记录优先。HTTPS 只是收录条件，不证明网站归属或可用性。</p>
     <dl class="quality-counts"><dt>不同主机名</dt><dd>${stats.unique_hosts}</dd><dt>有来源链的批量记录</dt><dd>${stats.imported_with_source}</dd><dt>已核对具体入口</dt><dd>${stats.verified_entries}</dd></dl>

@@ -1,5 +1,21 @@
 // Discovery labels are editorial rules, never evidence of official identity.
 export const TOPICS = [
+  ['exam', 'education', '考试报名与查分', /考试|报名|查分|考研/],
+  ['credentials', 'education', '学历与学籍', /学历|学籍/],
+  ['courses', 'education', '课程与学习资源', /课程|学习资源|智慧教育/],
+  ['education-service', 'education', '教育公共服务', null],
+  ['pdf-tools', 'tools', 'PDF与文档', /PDF|文档/i],
+  ['image-tools', 'tools', '图片处理', /图片|修图|PSD/i],
+  ['diagram-tools', 'tools', '绘图与白板', /绘图|流程图|思维导图|白板/],
+  ['tools-other', 'tools', '其他在线工具', null],
+  ['tech-news', 'news', '科技与数码', /科技新闻|数码资讯/],
+  ['game-news', 'news', '游戏资讯', /游戏资讯|游戏文化/],
+  ['general-news', 'news', '综合新闻', null],
+  ['console-games', 'games', '主机与游戏', /主机游戏/],
+  ['mobile-games', 'games', '手游与社区', /手机游戏/],
+  ['web-games', 'games', '网页与小游戏', /网页游戏|小游戏/],
+  ['game-stores', 'games', '电脑游戏平台', /游戏平台|电脑游戏/],
+  ['games-other', 'games', '其他游戏资源', null],
   ['dev', 'software', '开发与编程', /开发工具|开发环境|开发者|软件开发|前端开发|后端开发|编程|编辑器|版本控制|\b(ide|code editor|text editor|developer|development|programming|debugger|database client|sql|terminal|git client|api client|command-line)\b/i],
   ['browser', 'software', '浏览与搜索', /浏览器|\b(browser|web search|search engine)\b/i],
   ['security', 'software', '隐私与安全', /密码|安全|\b(password|encrypt|firewall|antivirus|privacy|vpn|security)\b/i],
@@ -10,11 +26,11 @@ export const TOPICS = [
   ['games', 'software', '游戏与娱乐', /游戏|\b(game|gaming|emulator)\b/i],
   ['utility', 'software', '系统与工具', /系统|工具|压缩|\b(utility|system|window manager|file manager|backup|disk|monitor|uninstaller|launcher|file transfer|archive manager)\b/i],
   ['software-other', 'software', '其他软件', null],
-  ['vocational', 'education', '职业与技术教育', /职业|高职|技师|\b(vocational|polytechnic|technical college|community college)\b/i],
-  ['university', 'education', '大学与学院', /大学|学院|大学校|\b(university|universities|college|universit[yaée]|universidade|universidad|universität|università|hochschule)\b/i],
-  ['school', 'education', '学校与教育机构', /学校|中学|小学|\b(school|lycée|ecole|école)\b/i],
-  ['research', 'education', '研究与专业机构', /研究|实验室|\b(research|laboratory|institute|institut|academy|academia)\b/i],
-  ['education-other', 'education', '其他教育资源', null],
+  ['vocational', 'institution', '职业与技术教育', /职业|高职|技师|\b(vocational|polytechnic|technical college|community college)\b/i],
+  ['university', 'institution', '大学与学院', /大学|学院|大学校|\b(university|universities|college|universit[yaée]|universidade|universidad|universität|università|hochschule)\b/i],
+  ['school', 'institution', '学校与教育机构', /学校|中学|小学|\b(school|lycée|ecole|école)\b/i],
+  ['research', 'institution', '研究与专业机构', /研究|实验室|\b(research|laboratory|institute|institut|academy|academia)\b/i],
+  ['education-other', 'institution', '其他教育资源', null],
 ].map(([id, category, name, pattern]) => ({ id, category, name, pattern }));
 
 const subjects = [
@@ -31,8 +47,8 @@ export function classify(site) {
     site = { ...site, category: site.region === 'CN' ? 'institutions-cn' : ['HK', 'MO', 'TW'].includes(site.region) ? 'institutions-hmt' : 'institutions-global' };
   }
   const isInstitution = site.category.startsWith('institutions-');
-  const topicText = [site.name, ...(site.aliases || []), ...(site.category === 'software' ? [site.description, ...(site.tags || [])] : [])].join(' ');
-  const candidates = TOPICS.filter((t) => t.category === (isInstitution ? 'education' : site.category) && (isInstitution || site.category !== 'education'));
+  const topicText = [site.name, ...(site.aliases || []), ...(!isInstitution ? [site.description, ...(site.tags || [])] : [])].join(' ');
+  const candidates = TOPICS.filter((t) => t.category === (isInstitution ? 'institution' : site.category));
   const editorialTopic = ({ nodejs: 'dev', git: 'dev', vscode: 'dev', python: 'dev', '7zip': 'utility' })[site.id];
   const matches = candidates.filter((t) => t.id === editorialTopic || t.pattern?.test(topicText));
   const topic = matches[0] || candidates.find((t) => !t.pattern);

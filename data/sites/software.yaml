@@ -268,10 +268,3 @@
   review_due_at: "2026-12-29"
   reviewer: Codex
   review_method: assisted
-- id: steam
-  verification_status: pending
-  name: Steam
-  url: https://store.steampowered.com
-  aliases:
-    - Steam下载
-  description: Steam 游戏平台官方网站

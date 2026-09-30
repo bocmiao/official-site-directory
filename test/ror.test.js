@@ -17,14 +17,16 @@ const run = (organizations, existing = []) => importRor({ organizations, existin
 
 test('ROR batch adds at least 10,000 distinct records above the preserved 4,943 baseline', () => {
   const sites = loadSites();
-  const base = sites.filter((s) => s.source?.id !== 'ror');
+  const baselineIds = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/imported/ror-baseline-ids.json')));
+  const base = sites.filter((s) => baselineIds.includes(s.id));
   const added = sites.filter((s) => s.source?.id === 'ror');
   const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/imported/ror-source.json')));
   assert.equal(base.length, 4943);
   assert.equal(digest(base.map((s) => s.id).sort().join('\n')), manifest.baseline_ids_sha256);
   assert.equal(manifest.baseline_count, base.length);
   assert.ok(added.length >= 10000);
-  assert.equal(sites.length - base.length, added.length);
+  assert.equal(new Set(baselineIds).size, baselineIds.length);
+  assert.ok(sites.length - base.length >= added.length);
   assert.equal(manifest.accepted, added.length);
   assert.equal(manifest.input, manifest.accepted + Object.values(manifest.skipped).reduce((a, b) => a + b, 0));
   assert.deepEqual(validate(loadCategories(), sites, date), []);

@@ -44,7 +44,7 @@ test('publication requires an explicit HTTPS site URL; candidates stay out of si
   assert.match(read(`site/${harvard.id}.html`), /原名：Harvard University/);
   assert.match(read(`site/${harvard.id}.html`), /维基数据固定版本/);
   assert.equal(JSON.parse(read('data/localization.json')).coverage.wikidata, 4116);
-  assert.match(read('category/education/1.html'), /教育考试服务/);
+  assert.match(read('category/education/1.html'), /教育考试与学习/);
   assert.doesNotMatch(read('category/education/1.html'), /Harvard University/);
   assert.ok(stats.status.sourced >= 2000);
   assert.ok(Buffer.byteLength(read('index.html')) < 40000, 'homepage must not inline thousands of rows');

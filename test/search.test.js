@@ -14,7 +14,7 @@ const invalid = (change) => { const site = valid(); change(site); return validat
 test('seed records validate; every verified entry has evidence, a method and review dates', () => {
   assert.deepEqual(validate(loadCategories(), sites, today), []);
   assert.equal(sites.filter((s) => s.verification_status === 'verified').length, 5);
-  assert.equal(sites.filter((s) => s.verification_status === 'pending').length, 57);
+  assert.equal(sites.filter((s) => s.verification_status === 'pending').length, 83);
   assert.ok(invalid((s) => { s.evidence = []; }).some((e) => e.includes('evidence')));
   assert.ok(invalid((s) => { s.entries.push({ ...s.entries[0], id: 'new', url: 'https://new.python.org/' }); }).some((e) => e.includes('缺少核验证据')));
   assert.ok(invalid((s) => { s.verified_at = '2027-01-01'; }).length);

@@ -108,7 +108,7 @@ export function validate(categories, sites, today = new Date().toISOString().sli
     for (const key of ['name', 'description']) if (!text(s[key])) fail(`${key} 必填`);
     for (const key of ['aliases', 'tags']) if (!stringList(s[key])) fail(`${key} 必须是非空字符串列表`);
     if (!catIds.has(s.category)) fail('未知分类');
-    if (s.subcategory && s.subcategory !== s.category && !TOPICS.some((t) => t.id === s.subcategory && t.category === (s.category.startsWith('institutions-') ? 'education' : s.category))) fail('未知二级分类');
+    if (s.subcategory && s.subcategory !== s.category && !TOPICS.some((t) => t.id === s.subcategory && t.category === (s.category.startsWith('institutions-') ? 'institution' : s.category))) fail('未知二级分类');
     if (s.localization && !validateLocalization(s.localization, s)) fail('中文名称与原始记录不一致或字段无效');
     if (s.classification && s.classification !== 'rules-v1') fail('未知分类规则');
     if (s.profile) {

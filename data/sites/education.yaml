@@ -2,29 +2,192 @@
   verification_status: pending
   name: 中华人民共和国教育部
   url: http://www.moe.gov.cn
-  aliases: [教育部]
+  aliases:
+    - 教育部
   description: 教育部官方网站
 - id: chsi
   verification_status: pending
   name: 中国高等教育学生信息网（学信网）
   url: https://www.chsi.com.cn
-  aliases: [学信网, 学历查询, 学籍查询]
+  aliases:
+    - 学信网
+    - 学历查询
+    - 学籍查询
   description: 教育部指定的学历、学籍查询与认证网站
+  tags:
+    - 学历学籍
 - id: yz-chsi
   verification_status: pending
   name: 中国研究生招生信息网
   url: https://yz.chsi.com.cn
-  aliases: [研招网, 考研报名, 考研]
+  aliases:
+    - 研招网
+    - 考研报名
+    - 考研
   description: 教育部指定的研究生报名与调剂平台
+  tags:
+    - 考试报名
+    - 研究生招生
 - id: neea
   verification_status: pending
   name: 教育部教育考试院
   url: https://www.neea.edu.cn
-  aliases: [考试院, 四六级, 英语四六级, 教资, 教师资格证]
+  aliases:
+    - 考试院
+    - 教育考试院
+    - 中国教育考试网
   description: 四六级、教师资格证、计算机等级等考试官方网站
 - id: cpta
   verification_status: pending
   name: 中国人事考试网
   url: http://www.cpta.com.cn
-  aliases: [人事考试, 公务员考试, 职称考试, 一建, 二建]
+  aliases:
+    - 人事考试
+    - 职称考试
+    - 一建
   description: 人社部人事考试中心，职业资格考试报名与成绩查询
+- id: smartedu
+  name: 国家智慧教育公共服务平台
+  url: https://www.smartedu.cn/
+  aliases:
+    - 智慧教育
+    - 国家教育平台
+  description: 教育公共服务与学习资源平台。
+  tags:
+    - 学习资源
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.smartedu.cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.smartedu.cn/
+      title: 国家智慧教育公共服务平台公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: icourse163
+  name: 中国大学MOOC
+  url: https://www.icourse163.org/
+  aliases:
+    - 慕课
+    - 中国大学慕课
+    - MOOC
+  description: 提供高校在线课程，查找课程与参与学习。
+  tags:
+    - 在线课程
+    - 大学课程
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.icourse163.org/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.icourse163.org/
+      title: 中国大学MOOC公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: xuetangx
+  name: 学堂在线
+  url: https://www.xuetangx.com/
+  aliases:
+    - 学堂
+    - 学堂在线课程
+  description: 高校在线课程学习平台。
+  tags:
+    - 在线课程
+    - 大学课程
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.xuetangx.com/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.xuetangx.com/
+      title: 学堂在线公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: cet
+  name: 全国大学英语四、六级考试
+  url: https://cet.neea.edu.cn/
+  aliases:
+    - 四六级
+    - 英语四六级
+    - CET
+    - 四级
+    - 六级
+    - 四六级报名
+    - 四六级查分
+  description: 查看四、六级考试说明、报名导航与成绩查询服务。
+  tags:
+    - 考试报名
+    - 成绩查询
+    - 英语学习
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://cet.neea.edu.cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://cet.neea.edu.cn/
+      title: 全国大学英语四、六级考试公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: ntce
+  name: 中小学教师资格考试
+  url: https://ntce.neea.edu.cn/
+  aliases:
+    - 教资
+    - 教师资格证
+    - NTCE
+    - 教资报名
+    - 教资查分
+  description: 查看教师资格考试通知、报名流程与成绩查询服务。
+  tags:
+    - 考试报名
+    - 成绩查询
+    - 教师资格
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://ntce.neea.edu.cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://ntce.neea.edu.cn/
+      title: 中小学教师资格考试公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home

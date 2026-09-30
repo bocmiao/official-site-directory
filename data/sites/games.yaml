@@ -1,0 +1,229 @@
+- id: steam
+  verification_status: pending
+  name: Steam
+  url: https://store.steampowered.com
+  aliases:
+    - Steam下载
+  description: Steam 游戏平台官方网站
+  tags:
+    - 游戏平台
+    - 电脑游戏
+- id: epic-store
+  name: Epic 游戏商城
+  url: https://store.epicgames.com/
+  aliases:
+    - Epic
+    - Epic Games Store
+    - EPIC商城
+  description: 浏览 Epic 游戏商城中的游戏与商店活动。
+  tags:
+    - 游戏平台
+    - 电脑游戏
+  region: GLOBAL
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://store.epicgames.com/
+      region: 全球
+      language: und
+  evidence:
+    - url: https://store.epicgames.com/
+      title: Epic 游戏商城公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: gog-store
+  name: GOG 游戏商店
+  url: https://www.gog.com/
+  aliases:
+    - GOG
+    - GOG商店
+  description: 提供电脑游戏的数字商店与游戏社区。
+  tags:
+    - 游戏平台
+    - 电脑游戏
+  region: GLOBAL
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.gog.com/
+      region: 全球
+      language: und
+  evidence:
+    - url: https://www.gog.com/
+      title: GOG 游戏商店公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: wegame
+  name: WeGame 游戏平台
+  url: https://www.wegame.com.cn/
+  aliases:
+    - WeGame
+    - 腾讯WeGame
+  description: WeGame 游戏平台的产品与游戏信息入口。
+  tags:
+    - 游戏平台
+    - 电脑游戏
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.wegame.com.cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.wegame.com.cn/
+      title: WeGame 游戏平台公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: taptap
+  name: TapTap 游戏社区
+  url: https://www.taptap.cn/
+  aliases:
+    - TapTap
+    - 手机游戏社区
+  description: 查找游戏、玩家评价与社区讨论。
+  tags:
+    - 游戏社区
+    - 手机游戏
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.taptap.cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.taptap.cn/download
+      title: TapTap 游戏社区公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: xbox
+  name: Xbox
+  url: https://www.xbox.com/zh-CN/
+  aliases:
+    - 微软Xbox
+    - Xbox游戏
+  description: 查看 Xbox 产品与游戏信息。
+  tags:
+    - 主机游戏
+    - 游戏平台
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.xbox.com/zh-CN/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.xbox.com/zh-CN/
+      title: Xbox公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: playstation
+  name: PlayStation
+  url: https://www.playstation.com/zh-hans-cn/
+  aliases:
+    - PS5
+    - PS
+    - 索尼游戏
+    - PlayStation中国
+  description: 查看 PlayStation 主机、游戏与周边产品信息。
+  tags:
+    - 主机游戏
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.playstation.com/zh-hans-cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.playstation.com/zh-hans-cn/
+      title: PlayStation公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: nintendo
+  name: 任天堂
+  url: https://www.nintendo.com/
+  aliases:
+    - Nintendo
+    - 任天堂游戏
+    - Switch
+  description: 任天堂地区选择入口，可选择适用地区查看产品与游戏。
+  tags:
+    - 主机游戏
+  region: GLOBAL
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.nintendo.com/
+      region: 全球
+      language: und
+  evidence:
+    - url: https://www.nintendo.com/
+      title: 任天堂公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: '4399'
+  name: 4399小游戏
+  url: https://www.4399.com/
+  aliases:
+    - '4399'
+    - 四三九九
+    - 网页小游戏
+  description: 提供网页小游戏分类与游戏导航。
+  tags:
+    - 网页游戏
+    - 小游戏
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.4399.com/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.4399.com/
+      title: 4399小游戏公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home

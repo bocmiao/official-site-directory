@@ -1,11 +1,9 @@
-# 分类定义。文件 data/sites/<id>.yaml 中的站点自动归入对应分类。
-# order 越小越靠前。
 - id: gov
   name: 政务服务
   icon: 🏛️
   order: 1
 - id: education
-  name: 教育考试服务
+  name: 教育考试与学习
   icon: 🎓
   order: 2
 - id: finance
@@ -45,3 +43,12 @@
 - id: institutions-global
   name: 海外院校与机构
   order: 12
+- id: tools
+  name: 在线工具
+  order: 2.1
+- id: news
+  name: 新闻资讯
+  order: 2.2
+- id: games
+  name: 游戏与平台
+  order: 2.3

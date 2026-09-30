@@ -1,0 +1,194 @@
+- id: xinhua
+  name: 新华网
+  url: https://www.news.cn/
+  aliases:
+    - 新华
+    - 新华社新闻
+  description: 提供时政、国际、财经、科技等新闻栏目。
+  tags:
+    - 综合新闻
+    - 时政新闻
+    - 国际新闻
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.news.cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.news.cn/
+      title: 新华网公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: people
+  name: 人民网
+  url: https://www.people.com.cn/
+  aliases:
+    - 人民日报网
+    - 人民网新闻
+  description: 提供时政与社会等新闻信息。
+  tags:
+    - 综合新闻
+    - 时政新闻
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.people.com.cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.people.com.cn/
+      title: 人民网公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: cctv-news
+  name: 央视网新闻
+  url: https://news.cctv.com/
+  aliases:
+    - 央视新闻
+    - CCTV新闻
+    - 新闻联播
+  description: 央视网新闻频道，提供新闻报道与视频内容。
+  tags:
+    - 综合新闻
+    - 视频新闻
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://news.cctv.com/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://news.cctv.com/
+      title: 央视网新闻公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: chinanews
+  name: 中国新闻网
+  url: https://www.chinanews.com.cn/
+  aliases:
+    - 中新网
+    - 中国新闻
+  description: 提供国内、国际等综合新闻报道。
+  tags:
+    - 综合新闻
+    - 国际新闻
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.chinanews.com.cn/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.chinanews.com.cn/
+      title: 中国新闻网公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: ithome
+  name: IT之家
+  url: https://www.ithome.com/
+  aliases:
+    - IT之家新闻
+    - IT资讯
+    - 数码新闻
+  description: 提供科技、数码产品与 IT 行业资讯。
+  tags:
+    - 科技新闻
+    - 数码资讯
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.ithome.com/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.ithome.com/
+      title: IT之家公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: 36kr
+  name: 36氪
+  url: https://36kr.com/
+  aliases:
+    - 36kr
+    - 三十六氪
+    - 创投资讯
+  description: 报道科技、互联网、创业与商业领域动态。
+  tags:
+    - 科技新闻
+    - 商业资讯
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://36kr.com/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://36kr.com/pages/about
+      title: 36氪公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home
+- id: gcores
+  name: 机核
+  url: https://www.gcores.com/
+  aliases:
+    - 机核网
+    - GCORES
+    - 游戏播客
+  description: 提供游戏文化内容、资讯与播客节目。
+  tags:
+    - 游戏资讯
+    - 游戏文化
+  region: CN
+  verification_status: pending
+  collected_at: '2026-09-30'
+  note: 已参考网站公开页面整理用途；主体与入口关系仍待完整核验。
+  entries:
+    - id: home
+      purpose: home
+      label: 网站首页（待核验）
+      url: https://www.gcores.com/
+      region: 中国
+      language: und
+  evidence:
+    - url: https://www.gcores.com/
+      title: 机核公开页面
+      relation: 页面名称及公开功能用于整理目录用途，不构成已核验结论。
+      entry_ids:
+        - home

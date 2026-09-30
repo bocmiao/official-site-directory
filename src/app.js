@@ -28,6 +28,13 @@ const previous = $('#previous-page');
 const next = $('#next-page');
 const pageInfo = $('#page-info');
 const quickButtons = [...document.querySelectorAll('[data-quick]')];
+const suggestions = $('#suggested-queries');
+const examples = {
+  education: ['考研报名', '四六级报名', '教资报名', '在线课程', '学历查询'],
+  tools: ['PDF 转换', '压缩图片', '在线修图', '思维导图'],
+  news: ['综合新闻', '科技新闻', '商业资讯', '游戏资讯'],
+  games: ['游戏平台', '手游', '主机游戏', '小游戏'],
+};
 const controls = [input, ...Object.values(filterFields), sort, view, clear, ...quickButtons];
 const base = document.documentElement.dataset.base || './';
 let index = [];
@@ -86,6 +93,21 @@ function renderVerdict(host) {
 
 function run() {
   if (!loaded) return;
+  for (const button of quickButtons) {
+    const target = ({ CN: 'institutions-cn', overseas: 'institutions-global' })[button.dataset.quick] || button.dataset.quick;
+    button.setAttribute('aria-pressed', String(target === category.value || (target === 'verified' && status.value === 'verified')));
+  }
+  suggestions.hidden = Boolean(category.value && !examples[category.value]);
+  suggestions.replaceChildren(el('span', {}, '试试搜索'), ...(examples[category.value] || ['四六级报名', 'PDF 转换', '科技新闻', '游戏平台']).map((text) => {
+    const button = el('button', { type: 'button' }, text);
+    button.addEventListener('click', () => {
+      clearTimeout(timer);
+      const selectedCategory = category.value;
+      resetFilters(); category.value = selectedCategory; updateFacets();
+      input.value = text; run(); input.focus();
+    });
+    return button;
+  }));
   const query = input.value.trim();
   verdict.hidden = true;
   let candidates = index;
@@ -137,6 +159,7 @@ function updateFacets() {
 
 async function load() {
   loaded = false;
+  suggestions.hidden = true;
   controls.forEach((control) => { control.disabled = true; });
   retry.hidden = true;
   loadStatus.hidden = false;
@@ -190,10 +213,9 @@ clear.addEventListener('click', () => {
 for (const button of quickButtons) button.addEventListener('click', () => {
   resetFilters();
   if (button.dataset.quick === 'verified') status.value = 'verified';
-  else if (button.dataset.quick === 'education') category.value = 'education';
+  else if (['education', 'tools', 'news', 'games', 'software'].includes(button.dataset.quick)) category.value = button.dataset.quick;
   else if (button.dataset.quick === 'CN') { category.value = 'institutions-cn'; region.value = 'CN'; }
   else if (button.dataset.quick === 'overseas') category.value = 'institutions-global';
-  else if (button.dataset.quick === 'software') category.value = 'software';
   else tag.value = button.dataset.quick;
   updateFacets(); run();
 });
