@@ -1,31 +1,35 @@
 - id: apple-cn
+  verification_status: pending
   name: Apple（中国）
   url: https://www.apple.com.cn
   aliases: [苹果, 苹果官网, iPhone, Apple]
   description: Apple 中国大陆官方网站
-  domains: [apple.com, icloud.com]
 - id: huawei
+  verification_status: pending
   name: 华为
   url: https://www.huawei.com/cn/
   aliases: [Huawei, 华为官网]
   description: 华为官方网站
-  domains: [vmall.com]
 - id: xiaomi
+  verification_status: pending
   name: 小米
   url: https://www.mi.com
   aliases: [小米商城, Xiaomi, Redmi]
   description: 小米官方网站与小米商城
 - id: vivo
+  verification_status: pending
   name: vivo
   url: https://www.vivo.com.cn
   aliases: [维沃]
   description: vivo 官方网站
 - id: oppo
+  verification_status: pending
   name: OPPO
   url: https://www.oppo.com
   aliases: [欧珀]
   description: OPPO 官方网站
 - id: lenovo
+  verification_status: pending
   name: 联想
   url: https://www.lenovo.com.cn
   aliases: [Lenovo, 联想官网, ThinkPad]

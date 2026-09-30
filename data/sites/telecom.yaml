@@ -1,24 +1,29 @@
 - id: 10086
+  verification_status: pending
   name: 中国移动
   url: https://www.10086.cn
   aliases: [移动, 10086, 话费充值]
   description: 中国移动官方网站，话费、流量、宽带业务办理
 - id: 10010
+  verification_status: pending
   name: 中国联通
   url: https://www.10010.com
   aliases: [联通, 10010]
   description: 中国联通官方网上营业厅
 - id: 189
+  verification_status: pending
   name: 中国电信
   url: https://www.189.cn
   aliases: [电信, 10000]
   description: 中国电信官方网上营业厅
 - id: chinapost
+  verification_status: pending
   name: 中国邮政
   url: https://www.chinapost.com.cn
   aliases: [邮政, EMS, 邮局]
   description: 中国邮政集团官方网站
 - id: sf-express
+  verification_status: pending
   name: 顺丰速运
   url: https://www.sf-express.com
   aliases: [顺丰, 顺丰快递, SF]

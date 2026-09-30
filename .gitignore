@@ -1,3 +1,4 @@
 node_modules/
 dist/
+.monitor/
 .DS_Store

@@ -1,24 +1,29 @@
 - id: moe
+  verification_status: pending
   name: 中华人民共和国教育部
   url: http://www.moe.gov.cn
   aliases: [教育部]
   description: 教育部官方网站
 - id: chsi
+  verification_status: pending
   name: 中国高等教育学生信息网（学信网）
   url: https://www.chsi.com.cn
   aliases: [学信网, 学历查询, 学籍查询]
   description: 教育部指定的学历、学籍查询与认证网站
 - id: yz-chsi
+  verification_status: pending
   name: 中国研究生招生信息网
   url: https://yz.chsi.com.cn
   aliases: [研招网, 考研报名, 考研]
   description: 教育部指定的研究生报名与调剂平台
 - id: neea
+  verification_status: pending
   name: 教育部教育考试院
   url: https://www.neea.edu.cn
   aliases: [考试院, 四六级, 英语四六级, 教资, 教师资格证]
   description: 四六级、教师资格证、计算机等级等考试官方网站
 - id: cpta
+  verification_status: pending
   name: 中国人事考试网
   url: http://www.cpta.com.cn
   aliases: [人事考试, 公务员考试, 职称考试, 一建, 二建]

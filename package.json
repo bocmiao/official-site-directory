@@ -1,8 +1,8 @@
 {
   "name": "official-site-directory",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "官网收录：只收录经过核验的官方网站，帮你一眼找到真官网",
+  "description": "官网收录：查找有来源依据的官网与具体入口",
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate.js",
@@ -12,7 +12,7 @@
     "test": "node --test test/*.test.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",

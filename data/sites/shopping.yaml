@@ -1,19 +1,23 @@
 - id: taobao
+  verification_status: pending
   name: 淘宝
   url: https://www.taobao.com
   aliases: [淘宝网, Taobao]
   description: 淘宝网官方网站
 - id: tmall
+  verification_status: pending
   name: 天猫
   url: https://www.tmall.com
   aliases: [天猫商城, Tmall]
   description: 天猫官方网站
 - id: jd
+  verification_status: pending
   name: 京东
   url: https://www.jd.com
   aliases: [京东商城, JD]
   description: 京东官方网站
 - id: pinduoduo
+  verification_status: pending
   name: 拼多多
   url: https://www.pinduoduo.com
   aliases: [PDD]

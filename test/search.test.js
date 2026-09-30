@@ -1,55 +1,79 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadCategories, loadSites, validate, buildSearchIndex } from '../scripts/lib/data.js';
-import { search, normalizeQuery, extractHost, checkHost } from '../src/search.js';
+import { search, normalizeQuery, extractHost, checkHost, resolveInput, preferredEntry, effectiveStatus, parseWebUrl } from '../src/search.js';
 
-const index = buildSearchIndex(loadSites());
-const top = (q) => search(q, index)[0]?.id;
+const today = '2026-09-30';
+const sites = loadSites();
+const index = buildSearchIndex(sites, today);
+const options = { today };
+const top = (q, includePending = false) => search(q, index, { ...options, includePending })[0]?.id;
+const valid = () => structuredClone(sites.find((s) => s.id === 'python'));
+const invalid = (change) => { const site = valid(); change(site); return validate(loadCategories(), [site], today); };
 
-test('数据校验通过', () => {
-  assert.deepEqual(validate(loadCategories(), loadSites()), []);
+test('seed records validate; every verified entry has evidence, a method and review dates', () => {
+  assert.deepEqual(validate(loadCategories(), sites, today), []);
+  assert.equal(sites.filter((s) => s.verification_status === 'verified').length, 5);
+  assert.equal(sites.filter((s) => s.verification_status === 'pending').length, 57);
+  assert.ok(invalid((s) => { s.evidence = []; }).some((e) => e.includes('evidence')));
+  assert.ok(invalid((s) => { s.entries.push({ ...s.entries[0], id: 'new', url: 'https://new.python.org/' }); }).some((e) => e.includes('缺少核验证据')));
+  assert.ok(invalid((s) => { s.verified_at = '2027-01-01'; }).length);
+  assert.ok(invalid((s) => { s.review_due_at = '2026-02-30'; }).length);
+  assert.ok(invalid((s) => { delete s.reviewer; }).length);
 });
 
-test('校验能发现重复与非法 url', () => {
-  const cats = [{ id: 'x' }];
-  const base = { name: 'A', description: 'd', aliases: [], domains: [], tags: [], category: 'x', _file: 't' };
-  const errors = validate(cats, [
-    { ...base, id: 'a', url: 'https://a.com' },
-    { ...base, id: 'a', url: 'https://www.a.com/' },
-    { ...base, id: 'b', url: 'https://b.com/?from=ad' },
-  ]);
-  assert.ok(errors.some((e) => e.includes('id 与')));
-  assert.ok(errors.some((e) => e.includes('url 与')));
-  assert.ok(errors.some((e) => e.includes('查询参数')));
+test('validation reports malformed collections, duplicate IDs and credential URLs', () => {
+  assert.ok(invalid((s) => { s.aliases = 'python'; }).length);
+  assert.ok(invalid((s) => { s.evidence[0].entry_ids = ['missing']; }).length);
+  assert.ok(invalid((s) => { s.url = 'https://user:password@www.python.org/'; }).length);
+  assert.ok(invalid((s) => { s.entries = [null]; }).length);
+  assert.ok(validate(loadCategories(), [valid(), valid()], today).some((e) => e.includes('id 重复')));
 });
 
-test('去掉“官网”等后缀', () => {
-  assert.equal(normalizeQuery(' 12306 官网 '), '12306');
-  assert.equal(normalizeQuery('微信下载'), '微信');
-  assert.equal(normalizeQuery('官网'), '官网');
+test('default search excludes pending and expired records; explicit candidate search still supports pinyin', () => {
+  assert.equal(top('Python'), 'python');
+  assert.equal(top('工行'), undefined);
+  for (const [query, id] of [['12306官网', '12306'], ['工行', 'icbc'], ['xuexinwang', 'chsi'], ['zsyh', 'cmbchina'], ['B站', 'bilibili']]) {
+    assert.equal(top(query, true), id);
+  }
+  assert.equal(search('Python', index, { today: '2027-01-01' }).length, 0);
+  assert.equal(effectiveStatus('verified', '2026-09-30', today), 'verified');
 });
 
-test('名称、别名、拼音、首字母都能搜到', () => {
-  assert.equal(top('12306官网'), '12306');
-  assert.equal(top('工行'), 'icbc');
-  assert.equal(top('学信网'), 'chsi');
-  assert.equal(top('xuexinwang'), 'chsi');
-  assert.equal(top('zsyh'), 'cmbchina');
-  assert.equal(top('四六级'), 'neea');
-  assert.equal(top('B站'), 'bilibili');
+test('Node.js is a product name unless the input explicitly specifies a URL', () => {
+  assert.equal(resolveInput('Node.js', index).kind, 'search');
+  assert.equal(top('Node.js'), 'nodejs');
+  assert.deepEqual(resolveInput('https://node.js', index), { kind: 'host', host: 'node.js' });
+  assert.equal(resolveInput('Python下载', index).kind, 'search');
+  assert.equal(resolveInput('Node.js下载', index).kind, 'search');
 });
 
-test('识别网址输入', () => {
-  assert.equal(extractHost('https://www.12306.cn/index/'), '12306.cn');
-  assert.equal(extractHost('kyfw.12306.cn'), 'kyfw.12306.cn');
-  assert.equal(extractHost('12306'), null);
-  assert.equal(extractHost('中国银行'), null);
+test('purpose words select the actual download or documentation entry', () => {
+  const python = index.find((s) => s.id === 'python');
+  assert.equal(normalizeQuery(' Python 官方下载入口 '), 'python');
+  assert.equal(top('Python 下载地址'), 'python');
+  assert.equal(preferredEntry(python, 'Python下载', today).url, 'https://www.python.org/downloads/');
+  assert.equal(preferredEntry(python, 'Python文档', today).url, 'https://docs.python.org/');
+  assert.equal(preferredEntry(index.find((s) => s.id === 'icbc'), '工行', today), null);
 });
 
-test('网址鉴别：官方 / 疑似仿冒 / 未收录', () => {
-  assert.equal(checkHost('kyfw.12306.cn', index).status, 'official');
-  assert.equal(checkHost('12306-cn.com', index).status, 'suspicious');
-  assert.equal(checkHost('icbc-com.cn', index).status, 'suspicious');
-  assert.equal(checkHost('bocc.cn', index).status, 'suspicious');
-  assert.equal(checkHost('example.org', index).status, 'unknown');
+test('URL parsing preserves exact www host and rejects credentials, private IPs and other protocols', () => {
+  assert.equal(extractHost('https://WWW.PYTHON.ORG./downloads/'), 'www.python.org');
+  assert.equal(extractHost('docs.python.org'), 'docs.python.org');
+  for (const url of ['javascript:alert(1)', 'ftp://www.python.org', 'https://u:p@www.python.org', 'https://www.python.org:8080', 'http://127.0.0.1', 'http://2130706433', 'http://[::1]', 'http://service.local']) assert.equal(parseWebUrl(url), null, url);
+});
+
+test('exact host matching never inherits parent-domain trust or asserts phishing', () => {
+  assert.equal(checkHost('www.python.org', index, today).status, 'matched');
+  for (const host of ['unverified-placeholder.python.org', 'www.python.org.example.org', 'python-tutorial.example.org']) {
+    assert.equal(checkHost(host, index, today).status, 'similar');
+  }
+  assert.equal(checkHost('www.python.org', index, '2027-01-01').status, 'unknown');
+  const fixtures = [
+    { id: 'chsi', v: 'verified', due: '2026-12-29', h: ['www.chsi.com.cn'] },
+    { id: 'yz-chsi', v: 'verified', due: '2026-12-29', h: ['yz.chsi.com.cn'] },
+    { id: 'qq', v: 'verified', due: '2026-12-29', h: ['im.qq.com'] },
+  ];
+  assert.deepEqual(checkHost('yz.chsi.com.cn', fixtures, today).matches.map((s) => s.id), ['yz-chsi']);
+  assert.equal(checkHost('mail.qq.com', fixtures, today).status, 'unknown');
 });
