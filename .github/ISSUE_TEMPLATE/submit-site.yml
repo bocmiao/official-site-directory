@@ -18,6 +18,32 @@ body:
     validations:
       required: true
   - type: input
+    id: owner
+    attributes:
+      label: 归属主体
+      description: 企业、机构、开发者或开源项目的名称；不确定时请说明。
+    validations:
+      required: true
+  - type: dropdown
+    id: purpose
+    attributes:
+      label: 入口用途
+      options:
+        - 首页
+        - 下载
+        - 文档
+        - 登录
+        - 源码
+    validations:
+      required: true
+  - type: input
+    id: region
+    attributes:
+      label: 地区与语言
+      placeholder: 全球 / 英文，或中国大陆 / 简体中文
+    validations:
+      required: true
+  - type: input
     id: aliases
     attributes:
       label: 常用简称 / 别名
@@ -27,10 +53,10 @@ body:
     id: evidence
     attributes:
       label: 官方依据
-      description: 至少提供一条，帮助审核确认这是真官网
+      description: 提供可访问的原始来源链接，并说明它怎样把该主体与这个具体入口联系起来。备案、证书或“自称官网”不能单独作为结论。
       placeholder: |
-        - ICP 备案主体：xxx 有限公司（可在 https://beian.miit.gov.cn 查询）
-        - 官方 App / 官方微博 / 政府网站中给出的链接
-        - 上市公司公告、营业执照信息等
+        - 来源链接：https://...
+        - 来源中的具体位置与归属关系：...
+        - 查阅日期：YYYY-MM-DD
     validations:
       required: true

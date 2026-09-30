@@ -1,0 +1,611 @@
+{
+  "brew-firefox": {
+    "aliases": [
+      "firefox",
+      "火狐浏览器",
+      "火狐",
+      "Firefox"
+    ],
+    "description": "Mozilla 开发的浏览器。",
+    "tags": [
+      "软件",
+      "macOS",
+      "浏览器"
+    ]
+  },
+  "brew-google-chrome": {
+    "aliases": [
+      "google-chrome",
+      "谷歌浏览器",
+      "Chrome"
+    ],
+    "description": "Google 的网页浏览器。",
+    "tags": [
+      "软件",
+      "macOS",
+      "浏览器"
+    ]
+  },
+  "brew-brave-browser": {
+    "aliases": [
+      "brave-browser",
+      "Brave浏览器"
+    ],
+    "description": "支持隐私保护功能的网页浏览器。",
+    "tags": [
+      "软件",
+      "macOS",
+      "浏览器"
+    ]
+  },
+  "brew-thunderbird": {
+    "aliases": [
+      "thunderbird",
+      "雷鸟邮件",
+      "雷鸟",
+      "Thunderbird"
+    ],
+    "description": "Mozilla Thunderbird 邮件客户端。",
+    "tags": [
+      "软件",
+      "macOS",
+      "邮件"
+    ]
+  },
+  "brew-vlc": {
+    "aliases": [
+      "vlc",
+      "VLC播放器",
+      "VLC"
+    ],
+    "description": "支持多种音视频格式的媒体播放器。",
+    "tags": [
+      "软件",
+      "macOS",
+      "播放器"
+    ]
+  },
+  "brew-iina": {
+    "aliases": [
+      "iina",
+      "IINA播放器"
+    ],
+    "description": "面向 macOS 的媒体播放器。",
+    "tags": [
+      "软件",
+      "macOS",
+      "播放器"
+    ]
+  },
+  "brew-obs": {
+    "aliases": [
+      "obs",
+      "OBS Studio",
+      "录屏直播OBS"
+    ],
+    "description": "用于录屏和直播的开放源代码软件。",
+    "tags": [
+      "软件",
+      "macOS",
+      "录屏",
+      "直播"
+    ]
+  },
+  "brew-blender": {
+    "aliases": [
+      "blender",
+      "Blender三维创作"
+    ],
+    "description": "用于建模、动画与渲染的三维创作软件。",
+    "tags": [
+      "软件",
+      "macOS",
+      "建模",
+      "动画"
+    ]
+  },
+  "brew-gimp": {
+    "aliases": [
+      "GNU Image Manipulation Program",
+      "gimp",
+      "GIMP图像编辑"
+    ],
+    "description": "开放源代码的图像编辑软件。",
+    "tags": [
+      "软件",
+      "macOS",
+      "图片编辑"
+    ]
+  },
+  "brew-inkscape": {
+    "aliases": [
+      "inkscape",
+      "Inkscape矢量绘图"
+    ],
+    "description": "矢量图形编辑软件。",
+    "tags": [
+      "软件",
+      "macOS",
+      "设计",
+      "绘图"
+    ]
+  },
+  "brew-krita": {
+    "aliases": [
+      "krita",
+      "Krita绘画"
+    ],
+    "description": "数字绘画与插画软件。",
+    "tags": [
+      "软件",
+      "macOS",
+      "绘画"
+    ]
+  },
+  "brew-audacity": {
+    "aliases": [
+      "audacity",
+      "Audacity音频编辑"
+    ],
+    "description": "音频录制与编辑软件。",
+    "tags": [
+      "软件",
+      "macOS",
+      "音频编辑"
+    ]
+  },
+  "brew-bitwarden": {
+    "aliases": [
+      "bitwarden",
+      "Bitwarden密码管理"
+    ],
+    "description": "密码管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "密码管理"
+    ]
+  },
+  "brew-1password": {
+    "aliases": [
+      "1password",
+      "1Password密码管理"
+    ],
+    "description": "密码和凭据管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "密码管理"
+    ]
+  },
+  "brew-keepassxc": {
+    "aliases": [
+      "keepassxc",
+      "KeePassXC密码管理"
+    ],
+    "description": "本地密码数据库管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "密码管理"
+    ]
+  },
+  "brew-keka": {
+    "aliases": [
+      "keka",
+      "Keka解压"
+    ],
+    "description": "macOS 压缩与解压工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "压缩",
+      "解压"
+    ]
+  },
+  "brew-iterm2": {
+    "aliases": [
+      "iterm2",
+      "iTerm终端"
+    ],
+    "description": "macOS 终端模拟器。",
+    "tags": [
+      "软件",
+      "macOS",
+      "终端",
+      "开发"
+    ]
+  },
+  "brew-alfred": {
+    "aliases": [
+      "alfred",
+      "Alfred启动器"
+    ],
+    "description": "macOS 应用启动与工作流工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "效率"
+    ]
+  },
+  "brew-raycast": {
+    "aliases": [
+      "raycast",
+      "Raycast启动器"
+    ],
+    "description": "macOS 应用启动与效率工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "效率"
+    ]
+  },
+  "brew-rectangle": {
+    "aliases": [
+      "rectangle",
+      "Rectangle窗口管理"
+    ],
+    "description": "macOS 窗口排列工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "效率"
+    ]
+  },
+  "brew-notion": {
+    "aliases": [
+      "notion",
+      "Notion笔记"
+    ],
+    "description": "笔记、文档和协作工作空间。",
+    "tags": [
+      "软件",
+      "macOS",
+      "笔记",
+      "协作"
+    ]
+  },
+  "brew-obsidian": {
+    "aliases": [
+      "obsidian",
+      "黑曜石笔记",
+      "Obsidian笔记"
+    ],
+    "description": "基于本地 Markdown 文件的笔记工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "笔记"
+    ]
+  },
+  "brew-logseq": {
+    "aliases": [
+      "logseq",
+      "Logseq笔记"
+    ],
+    "description": "大纲式笔记与知识管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "笔记"
+    ]
+  },
+  "brew-joplin": {
+    "aliases": [
+      "joplin",
+      "Joplin笔记"
+    ],
+    "description": "笔记和待办事项管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "笔记"
+    ]
+  },
+  "brew-zotero": {
+    "aliases": [
+      "zotero",
+      "Zotero文献管理"
+    ],
+    "description": "文献收集、整理和引用工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "文献",
+      "学术"
+    ]
+  },
+  "brew-calibre": {
+    "aliases": [
+      "Calibre电子书"
+    ],
+    "description": "电子书管理与格式转换工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "电子书"
+    ]
+  },
+  "brew-anki": {
+    "aliases": [
+      "anki",
+      "Anki记忆卡片"
+    ],
+    "description": "通过间隔重复安排复习的记忆卡片工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "学习"
+    ]
+  },
+  "brew-libreoffice": {
+    "aliases": [
+      "libreoffice",
+      "LibreOffice办公套件"
+    ],
+    "description": "文档、表格和演示文稿办公套件。",
+    "tags": [
+      "软件",
+      "macOS",
+      "办公"
+    ]
+  },
+  "brew-docker-desktop": {
+    "aliases": [
+      "Docker Community Edition",
+      "Docker CE",
+      "docker-desktop",
+      "docker",
+      "Docker桌面版"
+    ],
+    "description": "用于本地容器开发的桌面工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "容器",
+      "开发"
+    ]
+  },
+  "brew-postman": {
+    "aliases": [
+      "postman",
+      "Postman接口调试"
+    ],
+    "description": "API 开发与测试工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "API",
+      "开发"
+    ]
+  },
+  "brew-insomnia": {
+    "aliases": [
+      "insomnia",
+      "Insomnia接口调试"
+    ],
+    "description": "API 调试与请求管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "API",
+      "开发"
+    ]
+  },
+  "brew-dbeaver-community": {
+    "aliases": [
+      "dbeaver-community",
+      "DBeaver数据库"
+    ],
+    "description": "数据库连接与管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "数据库",
+      "开发"
+    ]
+  },
+  "brew-jetbrains-toolbox": {
+    "aliases": [
+      "jetbrains-toolbox",
+      "JetBrains工具箱"
+    ],
+    "description": "JetBrains 开发工具的安装管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "开发"
+    ]
+  },
+  "brew-sublime-text": {
+    "aliases": [
+      "sublime-text",
+      "Sublime文本编辑器"
+    ],
+    "description": "代码与文本编辑器。",
+    "tags": [
+      "软件",
+      "macOS",
+      "编辑器",
+      "开发"
+    ]
+  },
+  "brew-typora": {
+    "aliases": [
+      "typora",
+      "Typora编辑器"
+    ],
+    "description": "Markdown 文档编辑器。",
+    "tags": [
+      "软件",
+      "macOS",
+      "编辑器",
+      "写作"
+    ]
+  },
+  "brew-godot": {
+    "aliases": [
+      "godot",
+      "Godot游戏引擎"
+    ],
+    "description": "开放源代码的游戏开发引擎。",
+    "tags": [
+      "软件",
+      "macOS",
+      "游戏开发"
+    ]
+  },
+  "brew-unity-hub": {
+    "aliases": [
+      "unity-hub",
+      "Unity管理器"
+    ],
+    "description": "Unity 编辑器与项目管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "游戏开发"
+    ]
+  },
+  "brew-motrix": {
+    "aliases": [
+      "motrix",
+      "Motrix下载器"
+    ],
+    "description": "下载管理工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "下载管理"
+    ]
+  },
+  "brew-transmission": {
+    "aliases": [
+      "transmission",
+      "Transmission下载器"
+    ],
+    "description": "BitTorrent 客户端。",
+    "tags": [
+      "软件",
+      "macOS",
+      "下载管理"
+    ]
+  },
+  "brew-signal": {
+    "aliases": [
+      "signal",
+      "Signal通讯"
+    ],
+    "description": "即时通讯客户端。",
+    "tags": [
+      "软件",
+      "macOS",
+      "通讯"
+    ]
+  },
+  "brew-telegram": {
+    "aliases": [
+      "telegram",
+      "Telegram电报"
+    ],
+    "description": "Telegram 的 macOS 客户端。",
+    "tags": [
+      "软件",
+      "macOS",
+      "通讯"
+    ]
+  },
+  "brew-discord": {
+    "aliases": [
+      "discord",
+      "Discord社区"
+    ],
+    "description": "语音、视频与文字社区通讯工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "通讯"
+    ]
+  },
+  "brew-slack": {
+    "aliases": [
+      "slack",
+      "Slack协作"
+    ],
+    "description": "团队消息与协作工具。",
+    "tags": [
+      "软件",
+      "macOS",
+      "协作"
+    ]
+  },
+  "uni-0cd98864ea264f98": {
+    "aliases": [
+      "沈阳农业大学"
+    ]
+  },
+  "uni-2915e0470be8ace1": {
+    "aliases": [
+      "天津科技大学"
+    ]
+  },
+  "uni-3e279fe75c6e29c4": {
+    "aliases": [
+      "北京交通大学",
+      "北交大"
+    ]
+  },
+  "uni-43025717900d17b2": {
+    "aliases": [
+      "电子科技大学成都学院"
+    ]
+  },
+  "uni-5c73e774694dd1b4": {
+    "aliases": [
+      "上海交通大学",
+      "上海交大"
+    ]
+  },
+  "uni-71a546bb1554db86": {
+    "aliases": [
+      "大连东软信息学院"
+    ]
+  },
+  "uni-7780f472d53e2fc5": {
+    "aliases": [
+      "湖南大学",
+      "湖大"
+    ]
+  },
+  "uni-79a69bc4723f34dc": {
+    "aliases": [
+      "上海科技大学"
+    ]
+  },
+  "uni-9aec6f5460b2846a": {
+    "aliases": [
+      "南京信息工程大学",
+      "南信大"
+    ]
+  },
+  "uni-c87ab590c2f5d393": {
+    "aliases": [
+      "中山大学"
+    ]
+  },
+  "uni-d9712d78fdfb74ec": {
+    "aliases": [
+      "湖北商贸学院"
+    ]
+  },
+  "uni-de5776e78327e2a4": {
+    "aliases": [
+      "洛阳师范学院"
+    ]
+  },
+  "uni-fcaa81009a57e9ae": {
+    "aliases": [
+      "上海海关学院"
+    ]
+  }
+}

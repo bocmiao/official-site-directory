@@ -9,4 +9,4 @@ if (errors.length) {
   for (const e of errors) console.error('  ✗ ' + e);
   process.exit(1);
 }
-console.log(`✓ 数据校验通过：${categories.length} 个分类，${sites.length} 个官网`);
+console.log(`✓ 数据校验通过：${categories.length} 个分类，${sites.length} 条记录（含待审核候选）`);

@@ -1,63 +1,277 @@
 - id: wps
+  verification_status: pending
   name: WPS Office
   url: https://www.wps.cn
-  aliases: [WPS, 金山办公, WPS下载]
+  aliases:
+    - WPS
+    - 金山办公
+    - WPS下载
   description: 金山 WPS Office 官方网站
   note: 很多下载站会捆绑安装其他软件，请从官网下载
 - id: tencent-meeting
+  verification_status: pending
   name: 腾讯会议
   url: https://meeting.tencent.com
-  aliases: [腾讯会议下载]
+  aliases:
+    - 腾讯会议下载
   description: 腾讯会议官方网站
 - id: dingtalk
+  verification_status: pending
   name: 钉钉
   url: https://www.dingtalk.com
-  aliases: [钉钉下载, DingTalk]
+  aliases:
+    - 钉钉下载
+    - DingTalk
   description: 钉钉官方网站
 - id: feishu
+  verification_status: pending
   name: 飞书
   url: https://www.feishu.cn
-  aliases: [飞书下载, Lark]
+  aliases:
+    - 飞书下载
   description: 飞书官方网站
-  domains: [larksuite.com]
 - id: baidu-pan
+  verification_status: pending
   name: 百度网盘
   url: https://pan.baidu.com
-  aliases: [百度云, 网盘]
+  aliases:
+    - 百度云
+    - 网盘
   description: 百度网盘官方网站
 - id: huorong
+  verification_status: pending
   name: 火绒安全
   url: https://www.huorong.cn
-  aliases: [火绒]
+  aliases:
+    - 火绒
   description: 火绒安全软件官方网站
 - id: 7zip
+  verification_status: verified
   name: 7-Zip
   url: https://www.7-zip.org
-  aliases: [7z, 解压软件, 压缩软件]
+  aliases:
+    - 7z
+    - 解压软件
+    - 压缩软件
   description: 7-Zip 开源压缩软件官方网站
+  owner: Igor Pavlov / 7-Zip 项目
+  entries:
+    - id: home
+      purpose: home
+      label: 官网首页
+      url: https://www.7-zip.org
+      region: 全球
+      language: en
+    - id: download
+      purpose: download
+      label: 下载 7-Zip
+      url: https://www.7-zip.org/download.html
+      region: 全球
+      language: en
+  evidence:
+    - url: https://github.com/ip7z/7zip/blob/main/DOC/readme.txt
+      title: 7-Zip 源码说明
+      relation: 源码 readme 署名 Igor Pavlov 并列出 www.7-zip.org；网站下载链接反向指向该仓库的发布。
+      entry_ids:
+        - home
+    - url: https://www.7-zip.org/
+      title: 7-Zip 首页
+      relation: 首页署名 Igor Pavlov，Download 导航指向 download.html；已查阅下载页。
+      entry_ids:
+        - home
+        - download
+  verified_at: "2026-09-30"
+  review_due_at: "2026-12-29"
+  reviewer: Codex
+  review_method: assisted
 - id: python
+  verification_status: verified
   name: Python
   url: https://www.python.org
-  aliases: [Python下载]
+  aliases:
+    - Python下载
   description: Python 编程语言官方网站
+  owner: Python Software Foundation / Python 社区
+  entries:
+    - id: home
+      purpose: home
+      label: 官网首页
+      url: https://www.python.org
+      region: 全球
+      language: en
+    - id: download
+      purpose: download
+      label: 下载 Python
+      url: https://www.python.org/downloads/
+      region: 全球
+      language: en
+    - id: docs
+      purpose: docs
+      label: Python 文档
+      url: https://docs.python.org/
+      region: 全球
+      language: en
+  evidence:
+    - url: https://github.com/python/cpython/blob/main/README.rst
+      title: CPython 项目 README
+      relation: 项目 README 列出 python.org 为网站、docs.python.org 为文档，并注明 Python Software Foundation。
+      entry_ids:
+        - home
+        - docs
+    - url: https://www.python.org/
+      title: Python 网站导航
+      relation: 首页的 Downloads 链接指向 /downloads/，Documentation 链接指向 docs.python.org；页脚注明 Python Software Foundation。
+      entry_ids:
+        - home
+        - download
+        - docs
+  verified_at: "2026-09-30"
+  review_due_at: "2026-12-29"
+  reviewer: Codex
+  review_method: assisted
 - id: nodejs
+  verification_status: verified
   name: Node.js
   url: https://nodejs.org
-  aliases: [node, nodejs下载]
+  aliases:
+    - node
+    - nodejs下载
   description: Node.js 官方网站
+  owner: OpenJS Foundation / Node.js 项目
+  entries:
+    - id: home
+      purpose: home
+      label: 官网首页
+      url: https://nodejs.org
+      region: 全球
+      language: en
+    - id: download
+      purpose: download
+      label: 下载 Node.js
+      url: https://nodejs.org/en/download
+      region: 全球
+      language: en
+    - id: docs
+      purpose: docs
+      label: Node.js API 文档
+      url: https://nodejs.org/docs/latest/api/
+      region: 全球
+      language: en
+  evidence:
+    - url: https://github.com/nodejs/node/blob/main/README.md
+      title: Node.js 项目 README
+      relation: 项目 README 将 Node.js website 指向 nodejs.org，并列出该站的发布与文档入口。
+      entry_ids:
+        - home
+    - url: https://nodejs.org/en/about
+      title: About Node.js：官方资源
+      relation: Official Node.js Domains 列出 nodejs.org；导航的 Download 指向 /en/download。
+      entry_ids:
+        - home
+        - download
+    - url: https://nodejs.org/docs/latest/api/
+      title: Node.js API 文档目录
+      relation: 已查阅 nodejs.org 上的 API 文档目录，页面列出模块文档并链接项目代码仓库。
+      entry_ids:
+        - docs
+  verified_at: "2026-09-30"
+  review_due_at: "2026-12-29"
+  reviewer: Codex
+  review_method: assisted
 - id: git
+  verification_status: verified
   name: Git
   url: https://git-scm.com
-  aliases: [git下载]
+  aliases:
+    - git下载
   description: Git 版本控制工具官方网站
+  owner: Git 项目
+  entries:
+    - id: home
+      purpose: home
+      label: 官网首页
+      url: https://git-scm.com
+      region: 全球
+      language: en
+    - id: download
+      purpose: download
+      label: 安装与下载 Git
+      url: https://git-scm.com/install/
+      region: 全球
+      language: en
+    - id: docs
+      purpose: docs
+      label: Git 命令参考
+      url: https://git-scm.com/docs
+      region: 全球
+      language: en
+  evidence:
+    - url: https://github.com/git/git
+      title: Git 源码仓库 README
+      relation: Git 项目 README 明确将在线资源与完整文档指向 git-scm.com。
+      entry_ids:
+        - home
+    - url: https://git-scm.com/
+      title: Git 首页导航
+      relation: 首页的 Install 指向 /install/，Reference 指向 /docs，并链接 GitHub 上的 git/git 仓库。
+      entry_ids:
+        - home
+        - download
+        - docs
+  verified_at: "2026-09-30"
+  review_due_at: "2026-12-29"
+  reviewer: Codex
+  review_method: assisted
 - id: vscode
+  verification_status: verified
   name: Visual Studio Code
   url: https://code.visualstudio.com
-  aliases: [VSCode, VS Code]
+  aliases:
+    - VSCode
+    - VS Code
   description: 微软 VS Code 编辑器官方网站
+  owner: Microsoft
+  entries:
+    - id: home
+      purpose: home
+      label: 官网首页
+      url: https://code.visualstudio.com
+      region: 全球
+      language: en
+    - id: download
+      purpose: download
+      label: 下载 VS Code
+      url: https://code.visualstudio.com/Download
+      region: 全球
+      language: en
+    - id: docs
+      purpose: docs
+      label: VS Code 使用文档
+      url: https://code.visualstudio.com/docs
+      region: 全球
+      language: en
+  evidence:
+    - url: https://github.com/microsoft/vscode/blob/main/README.md
+      title: Microsoft VS Code 项目 README
+      relation: README 说明 Microsoft 开发该产品，产品网站为 code.visualstudio.com，下载链接为 /Download。
+      entry_ids:
+        - home
+        - download
+    - url: https://code.visualstudio.com/
+      title: VS Code 首页导航
+      relation: 首页提供 /Download 下载链接与 /docs 文档链接，与 Microsoft 源码仓库指向的网站一致。
+      entry_ids:
+        - home
+        - download
+        - docs
+  verified_at: "2026-09-30"
+  review_due_at: "2026-12-29"
+  reviewer: Codex
+  review_method: assisted
 - id: steam
+  verification_status: pending
   name: Steam
   url: https://store.steampowered.com
-  aliases: [Steam下载, 蒸汽平台]
+  aliases:
+    - Steam下载
   description: Steam 游戏平台官方网站
-  domains: [steampowered.com, steamcommunity.com]

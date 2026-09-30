@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "collected_at": "2026-09-30",
+  "accepted": 4881,
+  "input": {
+    "casks": 7769,
+    "universities": 10268
+  },
+  "skipped": {
+    "invalid_url": 33,
+    "inactive_cask": 964,
+    "version_variant": 231,
+    "duplicate_url": 165,
+    "curated_name": 5,
+    "font_package": 2584,
+    "http_only_source": 9174
+  },
+  "sources": [
+    {
+      "id": "homebrew-cask",
+      "name": "Homebrew Cask",
+      "url": "https://github.com/Homebrew/homebrew-cask",
+      "download_url": "https://formulae.brew.sh/api/cask.json",
+      "sha256": "e6203184b01f0b4aca26a5ba6b1d9b1e95a1504a73564aad37752984cae655cd",
+      "license": "BSD-2-Clause",
+      "license_file": "homebrew-cask.txt",
+      "revisions": [
+        "3f8508828c82c3ae771a7f4d42f2bee4bb390338"
+      ]
+    },
+    {
+      "id": "hipo-universities",
+      "name": "Hipo University Domains List",
+      "url": "https://github.com/Hipo/university-domains-list",
+      "download_url": "https://raw.githubusercontent.com/Hipo/university-domains-list/603e10f51b67c6553b9bca9aecc0db4c2417ed10/world_universities_and_domains.json",
+      "sha256": "4c8b526235db4b1c78706608558c497240537fe97cb601003e60464052896fce",
+      "license": "MIT",
+      "license_file": "hipo-universities.txt",
+      "revision": "603e10f51b67c6553b9bca9aecc0db4c2417ed10"
+    }
+  ]
+}

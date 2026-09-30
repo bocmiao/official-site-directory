@@ -1,46 +1,51 @@
-// 巡检所有官网：是否可访问、是否跳转到了未登记的域名（可能是官网换域名或被劫持）。
-// 用法：node scripts/check-links.js [--strict]
-// 注意：部分国内网站会拦截境外 IP，在 GitHub Actions 上可能出现误报，建议在境内机器上运行。
 import fs from 'node:fs';
-import { loadSites, hostOf } from './lib/data.js';
+import path from 'node:path';
+import { ROOT, loadSites, loadCategories, validate, hostOf } from './lib/data.js';
+import { probeEntry, recordResult, reportSignature } from './lib/probe.js';
+import { effectiveStatus } from '../src/search.js';
 
-const strict = process.argv.includes('--strict');
-const TIMEOUT = 15000;
-const CONCURRENCY = 8;
-const UA = 'Mozilla/5.0 (compatible; OfficialSiteDirectoryBot/0.1; +https://github.com/bocmiao/official-site-directory)';
-
-async function check(site) {
-  const official = [hostOf(site.url), ...site.domains];
-  try {
-    const res = await fetch(site.url, { redirect: 'follow', signal: AbortSignal.timeout(TIMEOUT), headers: { 'user-agent': UA } });
-    const finalHost = hostOf(res.url);
-    const onOfficial = official.some((h) => finalHost === h || finalHost.endsWith('.' + h));
-    if (!onOfficial) return { site, level: 'warn', msg: `跳转到了未登记的域名 ${finalHost}` };
-    if (res.status >= 400) return { site, level: 'warn', msg: `HTTP ${res.status}` };
-    return { site, level: 'ok', msg: `HTTP ${res.status}` };
-  } catch (e) {
-    return { site, level: 'error', msg: e.cause?.code || e.name || String(e) };
-  }
-}
-
+const directory = path.join(ROOT, '.monitor');
+fs.mkdirSync(directory, { recursive: true });
+const statePath = path.join(directory, 'state.json');
+let previous = {};
+if (fs.existsSync(statePath)) previous = JSON.parse(fs.readFileSync(statePath, 'utf8'));
 const sites = loadSites();
-const results = [];
+const errors = validate(loadCategories(), sites);
+if (errors.length) throw new Error(errors.join('\n'));
+const checked_at = new Date().toISOString();
+const today = checked_at.slice(0, 10);
+const probe_region = process.env.PROBE_REGION || 'local-unspecified';
+const tasks = sites.filter((s) => s.verification_status === 'verified').flatMap((site) => site.entries.map((entry) => ({ site, entry })));
 let next = 0;
-await Promise.all(
-  Array.from({ length: CONCURRENCY }, async () => {
-    while (next < sites.length) results.push(await check(sites[next++]));
-  }),
-);
-
-const bad = results.filter((r) => r.level !== 'ok');
-const lines = [
-  `## 官网巡检：${results.length - bad.length}/${results.length} 正常`,
-  '',
-  ...(bad.length
-    ? ['| 站点 | 网址 | 问题 |', '| --- | --- | --- |', ...bad.map((r) => `| ${r.site.name} | ${r.site.url} | ${r.level === 'error' ? '❌' : '⚠️'} ${r.msg} |`)]
-    : ['全部正常 ✅']),
-];
-const report = lines.join('\n');
-console.log(report);
-if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, report + '\n');
-if (strict && bad.length) process.exit(1);
+const results = [];
+await Promise.all(Array.from({ length: Math.min(4, tasks.length) }, async () => {
+  while (next < tasks.length) {
+    const { site, entry } = tasks[next++];
+    const key = `${site.id}/${entry.id}`;
+    const result = await probeEntry(entry, site.entries.map((e) => hostOf(e.url)));
+    results.push(recordResult(result, previous.records?.[key], { key, name: `${site.name} · ${entry.label}`, url: entry.url, checked_at, probe_region }));
+  }
+}));
+for (const site of sites) {
+  const status = effectiveStatus(site.verification_status, site.review_due_at, today);
+  if (status === 'review') results.push({ key: `${site.id}/verification`, name: site.name, url: site.url,
+    checked_at, probe_region, level: 'review', reason: 'VERIFICATION_REVIEW_DUE', failures: 0, actionable: true });
+}
+results.sort((a, b) => a.key.localeCompare(b.key));
+const actionable = results.filter((r) => r.actionable);
+const signature = reportSignature(results);
+const changed = signature !== (previous.signature || '[]');
+const clean = (s) => String(s ?? '').replace(/[\r\n|<>@]/g, ' ');
+const markdown = [
+  '# 官网入口巡检', '', `检测时间：${checked_at} · 节点：${probe_region}`, '',
+  `共检测 ${tasks.length} 个入口，${actionable.length} 项需要复核。单次网络失败只记录，连续两次失败才进入复核。`, '',
+  '| 产品与入口 | 结果 | 连续异常 | 需要复核 |', '| --- | --- | --- | --- |',
+  ...results.map((r) => `| ${clean(r.name)} | ${clean(r.reason)} | ${r.failures} | ${r.actionable ? '是' : '否'} |`), '',
+  '完整 URL、重定向链及节点信息见本次运行的 monitor-report artifact。连接结果不改变身份核验日期，也不自动删除记录。',
+].join('\n');
+fs.writeFileSync(path.join(directory, 'report.md'), markdown);
+fs.writeFileSync(path.join(directory, 'report.json'), JSON.stringify({ checked_at, probe_region, changed, signature, actionable: actionable.length, results }, null, 2));
+fs.writeFileSync(statePath, JSON.stringify({ checked_at, signature, records: Object.fromEntries(results.map((r) => [r.key, r])) }, null, 2));
+if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);
+console.log(markdown);
+if (process.argv.includes('--strict') && actionable.length) process.exitCode = 1;

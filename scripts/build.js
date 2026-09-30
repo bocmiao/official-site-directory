@@ -1,132 +1,152 @@
-// 把 data/ 下的 YAML 生成为纯静态站点，输出到 dist/。
-// 环境变量：
-//   SITE_URL  站点正式域名，用于 canonical 与 sitemap（例如 https://guanwang.example.com）
-//   REPO_URL  GitHub 仓库地址，用于“申请收录 / 纠错”链接
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, loadCategories, loadSites, buildSearchIndex, hostOf } from './lib/data.js';
+import { createHash } from 'node:crypto';
+import { ROOT, loadCategories, loadSites, loadSources, buildSearchIndex, validate } from './lib/data.js';
+import { effectiveStatus, STATUS_LABELS, parseWebUrl } from '../src/search.js';
+import { catalogStats } from './lib/stats.js';
 
-const SITE_URL = (process.env.SITE_URL || 'https://example.com').replace(/\/$/, '');
-const REPO_URL = (process.env.REPO_URL || 'https://github.com/bocmiao/official-site-directory').replace(/\/$/, '');
-const SITE_NAME = '官网收录';
+const production = process.argv.includes('--production');
+const configuredUrl = process.env.SITE_URL?.trim();
+const siteUrl = configuredUrl ? parseWebUrl(configuredUrl) : null;
+if ((configuredUrl && (!siteUrl || siteUrl.search || siteUrl.hash)) ||
+    (production && (!siteUrl || siteUrl.protocol !== 'https:' || /(^|\.)example\.(com|org|net)$/.test(siteUrl.hostname)))) {
+  throw new Error('发布构建必须设置真实的 HTTPS SITE_URL（可包含仓库子路径），不能使用示例域名。');
+}
+const SITE_URL = siteUrl?.href.replace(/\/$/, '');
+const REPO_URL = 'https://github.com/bocmiao/official-site-directory';
 const OUT = path.join(ROOT, 'dist');
-
+const today = new Date().toISOString().slice(0, 10);
 const submitUrl = `${REPO_URL}/issues/new?template=submit-site.yml`;
-const reportUrl = (site) =>
-  `${REPO_URL}/issues/new?template=report.yml&title=${encodeURIComponent(`[纠错] ${site.name}`)}`;
+const reportUrl = (site) => `${REPO_URL}/issues/new?template=report.yml&title=${encodeURIComponent(`[纠错] ${site.name}`)}`;
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const statusOf = (s) => effectiveStatus(s.verification_status, s.review_due_at, today);
+const external = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
 
-const esc = (s) =>
-  String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-
-function layout({ title, description, canonical, base, body, scripts = '' }) {
+function layout({ title, description, route = '', base = './', body, scripts = '', noindex = false }) {
   return `<!doctype html>
-<html lang="zh-CN" data-base="${base}" data-submit="${esc(submitUrl)}">
+<html lang="zh-CN" data-base="${base}" data-build="${buildVersion}" data-submit="${esc(submitUrl)}">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)}</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)} - 官网收录</title>
 <meta name="description" content="${esc(description)}">
-<link rel="canonical" href="${esc(canonical)}">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔎</text></svg>">
-<link rel="stylesheet" href="${base}assets/style.css">
+<meta name="referrer" content="no-referrer">
+${noindex || !SITE_URL ? '<meta name="robots" content="noindex,follow">' : ''}
+${SITE_URL ? `<link rel="canonical" href="${esc(`${SITE_URL}/${route}`)}">` : ''}
+<link rel="stylesheet" href="${base}assets/style.css?v=${buildVersion}">
 </head>
-<body>
-<div class="wrap">
-<header>
-  <h1><a href="${base}">🔎 ${SITE_NAME}</a></h1>
-  <p>只收录经过核验的官方网站 · 无广告 · 无竞价排名</p>
-</header>
-${body}
+<body><div class="wrap">
+<a class="skip-link" href="#main">跳到主要内容</a>
+<header><a class="brand" href="${base}">官网收录</a><p>找到所需入口，查看来源依据。</p><nav aria-label="主导航"><a href="${base}">搜索目录</a> · <a href="${base}sources.html">数据来源与质量</a> · <a href="${base}guide.html">收录与核验规则</a></nav></header>
+<main id="main">${body}</main>
 <footer>
-  <p>找不到想要的官网？<a href="${esc(submitUrl)}" target="_blank" rel="noopener">申请收录</a> ·
-  数据开源，欢迎 <a href="${REPO_URL}" target="_blank" rel="noopener">在 GitHub 上参与维护</a></p>
-  <p>本站仅提供官网链接，不代理任何业务。遇到要求输入银行卡、验证码的陌生网站，请先核对域名。</p>
-</footer>
-</div>
-${scripts}
-</body>
-</html>
-`;
+<p>${external(submitUrl, '申请收录')} · ${external(REPO_URL, '在 GitHub 上参与维护')}（提交需要 GitHub 账号）</p>
+<p>来源核对不等于品牌授权或安全认证。本站不代理下载、登录或交易。</p>
+</footer></div>${scripts}</body></html>`;
 }
 
-function cardHtml(s, base) {
+function cardHtml(s, base = './') {
+  const verified = statusOf(s) === 'verified';
+  const href = verified ? s.url : `${base}site/${s.id}.html`;
   return `<li class="card">
-  <a class="card-main" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">
-    <span class="card-name">${esc(s.name)}</span>
-    <span class="card-host">${esc(new URL(s.url).host)}</span>
-    <span class="card-desc">${esc(s.description)}</span>
-  </a>
-  ${s.note ? `<p class="card-note">⚠️ ${esc(s.note)}</p>` : ''}
-  <a class="card-detail" href="${base}site/${esc(s.id)}.html">详情与核验 ›</a>
-</li>`;
+<a class="card-main" href="${esc(href)}" ${verified ? 'target="_blank" rel="noopener noreferrer"' : ''}>
+<span class="card-name">${esc(s.name)}</span><span class="card-host ${verified ? '' : 'host-unverified'}">${esc(new URL(s.url).hostname)}</span>
+<span class="card-desc">${esc(s.description)}</span></a>
+<p class="card-status">${STATUS_LABELS[statusOf(s)]}${verified ? ` · ${esc(s.verified_at)}` : ''}</p>
+<a class="card-detail" href="${base}site/${esc(s.id)}.html">查看入口与依据</a></li>`;
 }
 
-function indexPage(categories, sites) {
-  const sections = categories
-    .map((c) => {
-      const list = sites.filter((s) => s.category === c.id);
-      if (!list.length) return '';
-      return `<section id="${esc(c.id)}">
-<h2>${esc(c.icon ?? '')} ${esc(c.name)}</h2>
-<ul class="grid">
-${list.map((s) => cardHtml(s, './')).join('\n')}
-</ul>
-</section>`;
-    })
-    .join('\n');
-
-  const body = `<div class="search">
-  <input id="q" type="search" autocomplete="off" autofocus
-    placeholder="输入名称、简称、拼音或首字母，如：12306、工行、xuexinwang、zsyh"
-    aria-label="搜索官网">
-  <small>也可以粘贴一个网址，检查它是不是官网 · 按 / 快速聚焦</small>
+function indexPage(sites) {
+  const verified = sites.filter((s) => statusOf(s) === 'verified');
+  const pending = sites.filter((s) => ['pending', 'review'].includes(statusOf(s)));
+  const sourced = sites.filter((s) => statusOf(s) === 'sourced');
+  const regions = [...new Set(sites.map((s) => s.region).filter(Boolean))].sort((a, b) => regionName(a).localeCompare(regionName(b), 'zh-CN'));
+  const body = `<h1>想找哪个官网？</h1>
+<p class="intro">按名称、别名或网址查找软件与机构。收录 ${sites.length.toLocaleString('zh-CN')} 条记录，来源与核验状态公开可查。</p>
+<ul class="stats" aria-label="收录统计"><li><strong>${verified.length}</strong> 已核对来源</li><li><strong>${sourced.length.toLocaleString('zh-CN')}</strong> 来源收录，未核验</li><li><strong>${pending.length}</strong> 待审核或复核</li></ul>
+<div class="search" role="search">
+<label for="q">搜索名称或检查网址</label>
+<input id="q" type="search" autocomplete="off" maxlength="500" disabled
+ placeholder="例如：Python 下载、火狐、上海交通大学" aria-describedby="search-help">
+<small id="search-help">支持中文、别名和拼音；粘贴网址可比对已登记的主机名。</small>
+<div class="filters">
+<label for="category-filter">分类<select id="category-filter" disabled><option value="">全部分类</option>${categories.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>
+<label for="region-filter">地区<select id="region-filter" disabled><option value="">全部地区</option>${regions.map((r) => `<option value="${r}">${esc(regionName(r))}</option>`).join('')}</select></label>
+<label for="status-filter">收录状态<select id="status-filter" disabled><option value="catalog">已核对 + 来源收录</option><option value="verified">仅已核对来源</option><option value="sourced">来源收录，未核验</option><option value="pending">待审核</option><option value="review">待复核</option><option value="all">全部可见记录</option></select></label>
+<button id="clear-filters" type="button" disabled>清空条件</button></div>
 </div>
-<div id="verdict" class="verdict" hidden></div>
+<p id="load-status" role="status">正在加载搜索。也可以直接浏览下方入口。</p>
+<button id="retry" type="button" hidden>重新加载搜索</button>
+<noscript><p>JavaScript 未启用，可以继续浏览下方入口和核验详情。</p></noscript>
+<p id="result-info" role="status" aria-live="polite"></p>
+<div id="verdict" class="verdict" role="status" hidden></div>
 <ul id="results" class="grid" hidden></ul>
-<div id="browse">
-${sections}
-</div>`;
-
-  return layout({
-    title: `${SITE_NAME} - 一眼找到真官网，远离仿冒与广告`,
-    description: `收录 ${sites.length} 个经过核验的官方网站，支持中文、拼音、首字母搜索和网址真伪鉴别。`,
-    canonical: `${SITE_URL}/`,
-    base: './',
-    body,
-    scripts: '<script type="module" src="./assets/app.js"></script>',
-  });
+<nav id="pagination" class="pagination" aria-label="搜索结果分页" hidden><button id="previous-page" type="button">上一页</button><span id="page-info"></span><button id="next-page" type="button">下一页</button></nav>
+<div id="browse"><h2>已核对来源</h2><ul class="grid">${verified.map((s) => cardHtml(s)).join('')}</ul></div>
+<section><h2>按分类浏览</h2><p class="muted">分类目录无需 JavaScript。第三方来源记录仅提供资料，需进一步核验。</p><ul class="category-list">${categories.map((c) => `<li><a href="./category/${c.id}/1.html">${esc(c.name)} <span>${stats.categories[c.id] || 0}</span></a></li>`).join('')}</ul></section>
+<details class="policy"><summary>我们如何核对来源？</summary>
+<p>已核对记录会说明主体、来源与具体入口的关系。来源收录仅表示第三方目录记录了这个地址，未完成官方身份核验，默认进入搜索但不提供直达，也不用于官网主机名匹配。</p>
+<p>辅助核对会明确标注方法与记录者。到期记录进入待复核状态；连接检测与身份核验分开处理。主机名匹配不验证任意路径、下载文件或网页当前内容。</p>
+</details>`;
+  return layout({ title: '查找官网与官方入口', description: '查询有来源依据的官网、下载和文档入口；待审核记录单独标识。', body,
+    scripts: `<script type="module" src="./assets/app.js?v=${buildVersion}"></script>` });
 }
 
-function sitePage(site, category, related) {
-  const host = hostOf(site.url);
+function sitePage(site, category) {
+  const status = statusOf(site);
+  const verified = status === 'verified';
+  const labels = Object.fromEntries(site.entries.map((e) => [e.id, e.label]));
   const body = `<article class="detail">
-  <h1>${esc(site.name)}官网</h1>
-  <p>${esc(site.description)}</p>
-  <a class="official-url" href="${esc(site.url)}" target="_blank" rel="noopener noreferrer">${esc(site.url)}</a>
-  ${site.note ? `<p class="tip">⚠️ ${esc(site.note)}</p>` : ''}
-  <dl>
-    <dt>官方域名</dt><dd>${[host, ...site.domains].map(esc).join('、')}</dd>
-    ${site.aliases.length ? `<dt>也叫</dt><dd>${site.aliases.map(esc).join('、')}</dd>` : ''}
-    <dt>分类</dt><dd><a href="../#${esc(category.id)}">${esc(category.name)}</a></dd>
-    ${site.icp ? `<dt>ICP 备案</dt><dd>${esc(site.icp)}</dd>` : ''}
-  </dl>
-  <h2>如何确认是真官网？</h2>
-  <ol>
-    <li>看地址栏：域名应当是 <b>${esc(host)}</b>${site.domains.length ? ' 或上面列出的其他官方域名' : ''}，注意 ${esc(host)}-xxx.com、${esc(host.split('.')[0])}.xyz 这类仿冒写法。</li>
-    <li>搜索结果里标有“广告”“推广”“赞助”的链接，不一定是官网。</li>
-    <li>中国大陆网站可在 <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">工信部 ICP 备案系统</a> 查询域名的主办单位。</li>
-  </ol>
-  <p>信息有误或官网已变更？<a href="${esc(reportUrl(site))}" target="_blank" rel="noopener">提交纠错</a></p>
-</article>
-${related.length ? `<h2>同类官网</h2><ul class="grid">${related.map((s) => cardHtml(s, '../')).join('\n')}</ul>` : ''}`;
+<h1>${esc(site.name)}</h1><p class="status ${verified ? 'status-verified' : 'status-pending'}">${STATUS_LABELS[status]}</p>
+<p>${esc(site.description)}</p>
+${verified ? '' : '<p class="tip">这条记录尚未完成核验或需要复核，暂不提供直达按钮，也不作为官方身份的判断依据。</p>'}
+<dl><dt>归属主体</dt><dd>${esc(site.owner || '待核对')}</dd><dt>分类</dt><dd>${esc(category.name)}</dd>
+${site.region ? `<dt>地区</dt><dd>${esc(regionName(site.region))}</dd>` : ''}
+${site.aliases.length ? `<dt>别名</dt><dd>${site.aliases.map(esc).join('、')}</dd>` : ''}
+${site.verified_at ? `<dt>来源核对日期</dt><dd>${esc(site.verified_at)}</dd>
+<dt>下次复核日期</dt><dd>${esc(site.review_due_at || '尚未安排')}</dd>
+<dt>核对方式</dt><dd>${site.review_method === 'assisted' ? 'AI 辅助来源核对' : site.review_method === 'human' ? '人工核对' : '尚未核对'}</dd>
+<dt>记录者</dt><dd>${esc(site.reviewer || '尚未记录')}</dd>` : ''}</dl>
+${verified ? `<h2>选择所需入口</h2><ul class="entry-list">${site.entries.map((e) => `<li>
+${external(e.url, e.label)}<span>${esc(e.region)} · ${esc(e.language)}</span><code>${esc(e.url)}</code>
+<small>依据：${site.evidence.map((item, i) => item.entry_ids.includes(e.id) ? `<a href="#evidence-${i}">${i + 1}</a>` : '').filter(Boolean).join('、')}</small>
+</li>`).join('')}</ul>` : `<h2>待核对地址</h2><code class="candidate-url">${esc(site.url)}</code>`}
+${site.source ? `<h2>收录来源</h2><p>${external(site.source.url, sourceById[site.source.id].name + (site.source.snapshot ? ' · 机构记录（可能更新）' : ' · 固定版本记录'))}${site.source.snapshot ? ` · ${external(site.source.snapshot, '本次使用的固定版本快照')}` : ''}</p><dl><dt>来源记录</dt><dd>${esc(site.source.record)}</dd><dt>采集日期</dt><dd>${esc(site.collected_at)}（不是核验日期）</dd><dt>来源许可证</dt><dd>${esc(sourceById[site.source.id].license)}</dd></dl><p>此地址来自第三方目录的 ${site.source.id === 'homebrew-cask' ? 'homepage' : site.source.id === 'ror' ? 'links[type=website]' : 'web_pages'} 字段，名称与地址可能过时。收录不代表品牌授权、办学资质或安全认证。<a href="../sources.html">查看来源与更新说明</a>。</p>${sourceById[site.source.id].attribution ? `<p class="muted">${esc(sourceById[site.source.id].attribution)}</p>` : ''}` : ''}
+<h2>核验依据</h2>
+${site.evidence.length ? `<ol class="evidence-list">${site.evidence.map((e, i) => `<li id="evidence-${i}">
+${external(e.url, e.title)}<p>${esc(e.relation)}</p><small>关联入口：${e.entry_ids.map((id) => esc(labels[id])).join('、')}</small></li>`).join('')}</ol>` : '<p>尚未补充能确认官方归属的原始依据。提交时请说明主体与网址的关系，并附上官方原始来源链接。</p>'}
+${verified ? '<p class="muted">来源核对仅覆盖列出的入口与核对日期，不自动覆盖同一域名的其他子域名或内容。</p>' : ''}
+<p>${external(reportUrl(site), '提交纠错或补充依据')} · ${external(`${REPO_URL}/commits/HEAD/${site._file}`, '查看数据修改历史')}</p>
+</article>`;
+  return layout({ title: `${site.name} · ${STATUS_LABELS[status]}`, description: verified ? site.description : `${site.name}候选记录，待核验。`,
+    route: `site/${site.id}.html`, base: '../', body, noindex: !verified });
+}
 
-  return layout({
-    title: `${site.name}官网_${site.name}官方网站入口 - ${SITE_NAME}`,
-    description: `${site.name}官方网站是 ${site.url}。${site.description}。`,
-    canonical: `${SITE_URL}/site/${site.id}.html`,
-    base: '../',
-    body,
-  });
+function regionName(code) {
+  return code === 'GLOBAL' ? '全球 / 未限定地区' : code === 'UNSPECIFIED' ? '未记录地区' : new Intl.DisplayNames(['zh-CN'], { type: 'region' }).of(code);
+}
+
+function categoryPage(category, records, page, pageSize = 60) {
+  const pages = Math.max(1, Math.ceil(records.length / pageSize));
+  const selected = records.slice((page - 1) * pageSize, page * pageSize);
+  const pager = `<nav class="pagination" aria-label="分类分页">${page > 1 ? `<a href="${page - 1}.html">上一页</a>` : '<span>已是首页</span>'}<span>第 ${page} / ${pages} 页 · 共 ${records.length} 条</span>${page < pages ? `<a href="${page + 1}.html">下一页</a>` : '<span>已是末页</span>'}</nav>`;
+  return layout({ title: `${category.name} · 第 ${page} 页`, description: `${category.name}目录，查看来源及核验状态。`, route: `category/${category.id}/${page}.html`, base: '../../', noindex: true,
+    body: `<h1>${esc(category.name)}</h1><p>来源收录不等于已核验官网。<a href="../../">返回搜索筛选</a></p>${pager}<ul class="grid">${selected.map((s) => cardHtml(s, '../../')).join('')}</ul>${pager}` });
+}
+
+function sourcesPage() {
+  return layout({ title: '数据来源与质量', description: '公开目录规模、来源许可、过滤规则与核验边界。', route: 'sources.html', body:
+    `<h1>数据来源与质量</h1><p>统计构建于 ${today}。${stats.total} 条记录中，${stats.status.verified || 0} 条已核对来源，${stats.status.sourced || 0} 条仅为来源收录。数字表示记录数量，不表示已验证官网数量。</p>
+    <h2>来源覆盖</h2><p>目前批量目录主要覆盖桌面软件、教育与研究机构；软件来源偏重 macOS 生态，机构名单可能存在历史名称与更新滞后，不代表完整的全球或中文官网库。ROR 本批仅收录 active 且类型包含 education 的机构；该状态是注册目录状态，不是本网核验结论。</p>
+    <ul class="source-list">${manifest.sources.map((s) => `<li><h3>${external(s.url, s.name)}</h3><p>${stats.sources[s.id] || 0} 条 · ${esc(s.license)} · 采集于 ${esc(s.collected_at)}</p><p><a href="./data/licenses/${s.license_file}">许可证全文</a>${(s.additional_license_files || []).map((file) => ` · <a href="./data/licenses/${file}">地区元数据许可</a>`).join('')} · ${external(s.download_url, '上游数据入口')}</p><p class="muted">每条详情保留来源记录和固定提交或版本快照，SHA-256 见来源清单。</p>${s.attribution ? `<p>${esc(s.attribution)}</p>` : ''}</li>`).join('')}</ul>
+    <h2>清洗规则</h2><p>只批量收录上游明确列出的 HTTPS 首页；不把 HTTP 地址擅自改成 HTTPS。不导入安装包、字体、停用软件、版本变体、带凭据或参数的地址。按归一化首页去重，人工维护记录优先。HTTPS 只是收录条件，不证明网站归属或可用性。</p>
+    <dl class="quality-counts"><dt>不同主机名</dt><dd>${stats.unique_hosts}</dd><dt>有来源链的批量记录</dt><dd>${stats.imported_with_source}</dd><dt>已核对具体入口</dt><dd>${stats.verified_entries}</dd></dl>
+    <h2>数据下载</h2><p><a href="./data/catalog.json" download>完整目录 JSON</a> · <a href="./data/quality.json" download>质量统计 JSON</a> · <a href="./data/sources.json" download>来源版本与过滤统计</a></p><p>导出的字段和状态与页面一致，勿把 sourced 当作 verified。第三方派生字段遵循上游许可证；本项目原创内容暂未授予独立复用许可。</p><h2>发现问题</h2><p>详情页可提交纠错；维护者在独立修订文件保留更正或撤销记录，刷新来源不会清除修订。来源更新先经过校验和 PR 审阅，不自动发布。</p>` });
+}
+
+function guidePage() {
+  return layout({ title: '收录与核验规则', description: '理解收录状态、核验流程和如何贡献官网记录。', route: 'guide.html', body:
+    `<h1>找到地址，也看清依据</h1><h2>四种可见状态</h2><ul><li><strong>已核对来源：</strong>逐项记录主体、入口与来源的关系，有核对方式、记录者和复核日期。</li><li><strong>来源收录，未核验：</strong>第三方目录中有记录，可以搜索和查看来源，尚不能确认其官方归属。</li><li><strong>待审核：</strong>仍需补充或审阅材料。</li><li><strong>待复核：</strong>核验已过期或有疑问，暂停直达。</li></ul>
+    <h2>怎么搜索</h2><p>名称支持中文、英文、别名及已有中文别名的拼音。可组合分类、地区和状态筛选。输入“Python 下载”会优先选择已登记下载入口；未收录的用途不会凭空生成地址。搜索和粘贴的网址不会写入浏览器 URL 或历史。</p><h2>网址比对的范围</h2><p>仅比较已核对入口的完整主机名，保留 www 与其他子域名的区别。匹配不验证任意路径、网页当前内容或下载文件；相似和未收录都不等于仿冒。来源收录不参与主机名认证。</p><h2>贡献一条记录</h2><ol><li>先搜索名称及网址，避免重复。</li><li>提供准确名称、入口用途、主体和官方原始来源。</li><li>说明来源怎样链接到目标入口；不要只提供搜索截图或排名。</li><li>经审阅后更新核验状态，后续按日期复核。</li></ol><p>${external(submitUrl, '申请收录')} · ${external(`${REPO_URL}/blob/HEAD/docs/DESIGN.md`, '维护者数据规范')}</p>` });
 }
 
 function write(rel, content) {
@@ -137,31 +157,35 @@ function write(rel, content) {
 
 const categories = loadCategories();
 const sites = loadSites();
+const errors = validate(categories, sites);
+if (errors.length) throw new Error(errors.join('\n'));
 const catById = Object.fromEntries(categories.map((c) => [c.id, c]));
-
+const manifest = loadSources();
+const sourceById = Object.fromEntries(manifest.sources.map((s) => [s.id, s]));
+const stats = catalogStats(sites, today);
+const indexJson = JSON.stringify(buildSearchIndex(sites, today));
+const sourceFiles = Object.fromEntries(['app.js', 'search.js', 'style.css'].map((file) => [file, fs.readFileSync(path.join(ROOT, 'src', file), 'utf8')]));
+const buildVersion = createHash('sha256').update(indexJson + JSON.stringify(sourceFiles)).digest('hex').slice(0, 12);
+// Only this fixed build directory is replaced; no user-controlled output path.
+if (path.resolve(OUT) !== path.resolve(ROOT, 'dist')) throw new Error('Unexpected output directory');
 fs.rmSync(OUT, { recursive: true, force: true });
-
-write('index.html', indexPage(categories, sites));
-for (const site of sites) {
-  const related = sites.filter((s) => s.category === site.category && s.id !== site.id).slice(0, 6);
-  write(`site/${site.id}.html`, sitePage(site, catById[site.category], related));
+write('index.html', indexPage(sites));
+for (const site of sites) write(`site/${site.id}.html`, sitePage(site, catById[site.category]));
+for (const category of categories) {
+  const records = sites.filter((s) => s.category === category.id && statusOf(s) !== 'withdrawn').sort((a, b) => Number(statusOf(b) === 'verified') - Number(statusOf(a) === 'verified') || a.name.localeCompare(b.name, 'zh-CN'));
+  for (let page = 1; page <= Math.max(1, Math.ceil(records.length / 60)); page++) write(`category/${category.id}/${page}.html`, categoryPage(category, records, page));
 }
-
-write('assets/sites.json', JSON.stringify(buildSearchIndex(sites)));
-for (const f of ['app.js', 'search.js', 'style.css']) {
-  fs.copyFileSync(path.join(ROOT, 'src', f), path.join(OUT, 'assets', f));
-}
-
-const today = new Date().toISOString().slice(0, 10);
-const urls = [`${SITE_URL}/`, ...sites.map((s) => `${SITE_URL}/site/${s.id}.html`)];
-write(
-  'sitemap.xml',
-  `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <url><loc>${esc(u)}</loc><lastmod>${today}</lastmod></url>`).join('\n')}
-</urlset>
-`,
-);
-write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
-
-console.log(`✓ 已生成 dist/：首页 + ${sites.length} 个官网详情页 + sitemap.xml`);
+write('sources.html', sourcesPage());
+write('guide.html', guidePage());
+write('data/catalog.json', JSON.stringify(sites.map(({ _file, ...site }) => site)));
+write('data/quality.json', JSON.stringify(stats, null, 2));
+write('data/sources.json', JSON.stringify(manifest, null, 2));
+for (const source of manifest.sources) for (const file of [source.license_file, ...(source.additional_license_files || [])]) write(`data/licenses/${file}`, fs.readFileSync(path.join(ROOT, 'data/licenses', file), 'utf8'));
+write('assets/sites.json', indexJson);
+for (const [file, content] of Object.entries(sourceFiles)) write(`assets/${file}`, file === 'app.js' ? content.replace("'./search.js'", `'./search.js?v=${buildVersion}'`) : content);
+if (SITE_URL) {
+  const records = [{ route: '', modified: null }, ...sites.filter((s) => statusOf(s) === 'verified').map((s) => ({ route: `site/${s.id}.html`, modified: s.verified_at }))];
+  write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${records.map((r) => `<url><loc>${esc(`${SITE_URL}/${r.route}`)}</loc>${r.modified ? `<lastmod>${r.modified}</lastmod>` : ''}</url>`).join('\n')}\n</urlset>`);
+  write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+} else write('robots.txt', 'User-agent: *\nDisallow: /\n');
+console.log(`✓ ${sites.length} 条记录，${stats.status.verified || 0} 条已核对，${stats.status.sourced || 0} 条来源收录；已生成分页分类目录、详情与质量报告。${SITE_URL ? '' : '本地预览未生成 canonical/sitemap。'}`);

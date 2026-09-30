@@ -2,21 +2,76 @@ name: 官网巡检
 
 on:
   schedule:
-    - cron: '17 1 * * 1' # 每周一
+    - cron: '17 1 * * 1'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: directory-monitor
+  cancel-in-progress: false
+
 jobs:
   check:
+    if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      # 国内不少网站会拦截境外 IP，这里只出报告不判失败
+      - run: npm ci --ignore-scripts
+      - uses: actions/cache/restore@v4
+        with:
+          path: .monitor/state.json
+          key: monitor-state-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: monitor-state-v1-
       - run: npm run check-links
+        env:
+          PROBE_REGION: github-hosted-ubuntu-location-unspecified
+      - uses: actions/upload-artifact@v4
+        with:
+          name: monitor-report
+          path: .monitor/
+          include-hidden-files: true
+          retention-days: 90
+      - uses: actions/cache/save@v4
+        with:
+          path: .monitor/state.json
+          key: monitor-state-v1-${{ github.run_id }}-${{ github.run_attempt }}
+
+  notify:
+    if: vars.ENABLE_MONITOR_ISSUES == 'true'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      issues: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: monitor-report
+          path: report
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const report = JSON.parse(fs.readFileSync('report/report.json', 'utf8'));
+            const title = '[巡检] 官网入口待复核';
+            const marker = '<!-- official-site-directory-monitor -->';
+            const issues = await github.paginate(github.rest.issues.listForRepo, { ...context.repo, state: 'open', creator: 'github-actions[bot]', per_page: 100 });
+            const existing = issues.find(i => i.title === title && i.body?.includes(marker));
+            if (!report.actionable) {
+              if (existing) await github.rest.issues.update({ ...context.repo, issue_number: existing.number, state: 'closed' });
+              return;
+            }
+            const digest = require('node:crypto').createHash('sha256').update(report.signature).digest('hex');
+            const signatureMarker = `<!-- monitor-signature: ${digest} -->`;
+            if (existing?.body?.includes(signatureMarker)) return;
+            const body = marker + '\n' + signatureMarker + '\n' + fs.readFileSync('report/report.md', 'utf8') +
+              `\n\n[查看运行与完整报告](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            if (existing) await github.rest.issues.update({ ...context.repo, issue_number: existing.number, body });
+            else await github.rest.issues.create({ ...context.repo, title, body });

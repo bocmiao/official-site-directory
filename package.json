@@ -1,18 +1,21 @@
 {
   "name": "official-site-directory",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "private": true,
-  "description": "官网收录：只收录经过核验的官方网站，帮你一眼找到真官网",
+  "description": "官网收录：查找有来源依据的官网与具体入口",
   "type": "module",
   "scripts": {
     "validate": "node scripts/validate.js",
     "build": "node scripts/validate.js && node scripts/build.js",
     "check-links": "node scripts/check-links.js",
     "serve": "npm run build && npx --yes serve dist",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "import:data": "node scripts/import-data.js",
+    "audit:data": "node scripts/audit-data.js",
+    "import:ror": "node scripts/import-ror.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",

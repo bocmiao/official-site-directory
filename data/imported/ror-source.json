@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "collected_at": "2026-09-30",
+  "accepted": 17830,
+  "input": 141528,
+  "skipped": {
+    "outside_education_scope": 108520,
+    "no_https_homepage": 10982,
+    "duplicate_name_in_region": 261,
+    "inactive": 3239,
+    "duplicate_homepage": 696
+  },
+  "baseline_count": 4943,
+  "baseline_ids_sha256": "b15814af28d33dcf88ff819b0edb3bdaf4685d177af62ea4fdca2d4d757f6979",
+  "sources": [
+    {
+      "id": "ror",
+      "name": "Research Organization Registry (ROR)",
+      "url": "https://ror.org/",
+      "snapshot": "https://zenodo.org/records/22902037",
+      "download_url": "https://zenodo.org/records/22902037",
+      "sha256": "6d032ff473f771e015da0837fe28b881a8f85822ee7815effefe11dc49c4346c",
+      "source_file": "v2.13-2026-09-22-ror-data.json",
+      "license": "CC0-1.0; country metadata CC-BY-4.0",
+      "license_file": "ror-cc0.txt",
+      "additional_license_files": [
+        "geonames-cc-by-4.0.txt"
+      ],
+      "attribution": "Research Organization Registry; country codes derived from GeoNames (https://www.geonames.org), CC BY 4.0. Only country codes retained; other location fields omitted."
+    }
+  ]
+}
