@@ -128,7 +128,8 @@ ${verified ? `<h2>选择所需入口</h2><ul class="entry-list">${site.entries.m
 ${external(e.url, e.label)}<span>${esc(e.region)} · ${esc(e.language)}</span><code>${esc(e.url)}</code>
 <small>依据：${site.evidence.map((item, i) => item.entry_ids.includes(e.id) ? `<a href="#evidence-${i}">${i + 1}</a>` : '').filter(Boolean).join('、')}</small>
 </li>`).join('')}</ul>` : `<h2>待核对地址</h2><code id="candidate-address" class="candidate-url">${esc(site.url)}</code><button type="button" id="copy-address">复制待核对地址</button><span id="copy-status" role="status"></span>`}
-${site.source ? `<h2>收录来源</h2><p>${external(site.source.url, sourceName(sourceById[site.source.id]) + (site.source.snapshot ? ' · 机构记录（可能更新）' : ' · 固定版本记录'))}${site.source.snapshot ? ` · ${external(site.source.snapshot, '本次使用的固定版本快照')}` : ''}</p><dl><dt>来源记录</dt><dd>${esc(site.source.record)}</dd><dt>采集日期</dt><dd>${esc(site.collected_at)}（不是核验日期）</dd><dt>来源许可证</dt><dd>${esc(sourceById[site.source.id].license)}</dd></dl><p>此地址来自第三方目录的 ${site.source.id === 'homebrew-cask' ? 'homepage' : site.source.id === 'ror' ? 'links[type=website]' : 'web_pages'} 字段，名称与地址可能过时。收录不代表品牌授权、办学资质或安全认证。<a href="../sources.html">查看来源与更新说明</a>。</p>${sourceById[site.source.id].attribution ? `<p class="muted">${esc(sourceById[site.source.id].attribution)}</p>` : ''}` : ''}
+${site.source ? `<h2>收录来源</h2><p>${external(site.source.url, sourceName(sourceById[site.source.id]) + (site.source.id === 'wikidata-directory' ? ' · 实体记录（可能更新）' : site.source.snapshot ? ' · 机构记录（可能更新）' : ' · 固定版本记录'))}${site.source.snapshot ? ` · ${external(site.source.snapshot, '本次使用的固定版本快照')}` : ''}</p><dl><dt>来源记录</dt><dd>${esc(site.source.record)}</dd><dt>采集日期</dt><dd>${esc(site.collected_at)}（不是核验日期）</dd><dt>来源许可证</dt><dd>${esc(sourceById[site.source.id].license)}</dd></dl><p>此地址来自第三方目录的 ${site.source.id === 'homebrew-cask' ? 'homepage' : site.source.id === 'ror' ? 'links[type=website]' : site.source.id === 'wikidata-directory' ? 'P856（官网）' : 'web_pages'} 字段，名称与地址可能过时。收录不代表品牌授权、办学资质或安全认证。<a href="../sources.html">查看来源与更新说明</a>。</p>${sourceById[site.source.id].attribution ? `<p class="muted">${esc(sourceById[site.source.id].attribution)}</p>` : ''}` : ''}
+${site.source?.id === 'wikidata-directory' ? `<p>本次来源行 SHA-256：<code class="candidate-url">${esc(site.source.sha256)}</code>。<a href="../data/directory-evidence.json" download>下载本批原始字段快照</a>，按记录编号 ${esc(site.id)} 查阅。</p>` : ''}
 <h2>核验依据</h2>
 ${site.evidence.length ? `<ol class="evidence-list">${site.evidence.map((e, i) => `<li id="evidence-${i}">
 ${external(e.url, e.title)}<p>${esc(e.relation)}</p><small>关联入口：${e.entry_ids.map((id) => esc(labels[id])).join('、')}</small></li>`).join('')}</ol>` : '<p>尚未补充能确认官方归属的原始依据。提交时请说明主体与网址的关系，并附上官方原始来源链接。</p>'}
@@ -146,11 +147,13 @@ function profileHtml(site) {
   const p = site.profile || {};
   const typeNames = { education: '教育', funder: '资助', facility: '科研设施', healthcare: '医疗', company: '企业', government: '政府', nonprofit: '非营利', archive: '档案', other: '其他' };
   const rows = [['细分目录', topicName(site.subcategory, categories)], ['登记主机名', new URL(site.url).hostname], ['连接协议', new URL(site.url).protocol === 'https:' ? 'HTTPS（不代表身份核验或当前可用）' : 'HTTP'], ['记录编号', site.id]];
-  if (p.established) rows.push(['成立年份（来源记载）', String(p.established)]);
+  if (p.established) rows.push(['成立/创建年份（来源记载）', String(p.established)]);
   if (p.locations?.length) rows.push(['所在地（来源记载）', p.locations.map((l) => [...new Set([regionName(l.country), l.subdivision, l.city].filter(Boolean))].join(' / ')).join('；')]);
   if (p.organization_types?.length) rows.push(['机构类型（ROR）', p.organization_types.map((t) => typeNames[t] || t).join('、')]);
   if (p.name_languages?.length) rows.push(['登记名称语言', p.name_languages.map(languageName).join('、') + '（不是网站支持语言）']);
   if (p.source_updated) rows.push(['上游资料更新', p.source_updated + '（不是网站检测日期）']);
+  if (p.identifiers?.length) rows.push(['机构标识（来源记载）', p.identifiers.map((v) => `${v.scheme.toUpperCase()}: ${v.value}`).join('；')]);
+  if (p.package_version) rows.push(['采集时软件包版本', p.package_version + '（不保证为当前最新版）']);
   if (p.distribution) rows.push(['软件包目录', p.distribution]);
   if (p.package_platforms?.length) rows.push(['本次软件包平台', p.package_platforms.join('、') + '（不代表完整平台支持范围）']);
   if (p.cask_languages?.length) rows.push(['软件包语言选项', p.cask_languages.map(languageName).join('、') + '（不是网站语言）']);
@@ -182,10 +185,11 @@ function categoryPage(category, records, page, pageSize = 60) {
 function sourcesPage() {
   return layout({ title: '数据来源与质量', description: '公开目录规模、来源许可、过滤规则与核验边界。', route: 'sources.html', body:
     `<h1>数据来源与质量</h1><p>统计构建于 ${today}。${stats.total} 条记录中，${stats.status.verified || 0} 条已核对来源，${stats.status.sourced || 0} 条仅为来源收录。数字表示记录数量，不表示已验证官网数量。</p>
-    <h2>来源覆盖</h2><p>目前批量目录主要覆盖桌面软件、教育与研究机构；软件来源偏重 macOS 生态，机构名单可能存在历史名称与更新滞后，不代表完整的全球或中文官网库。ROR 本批仅收录 active 且类型包含 education 的机构；该状态是注册目录状态，不是本网核验结论。</p>
+    <h2>分类覆盖</h2><p>目标：每个一级分类至少 1,000 条。达到目标 ${stats.category_target.met} / ${stats.category_target.total} 类；数量不代表核验完成。</p><table class="coverage-table"><thead><tr><th scope="col">分类</th><th scope="col">记录数</th></tr></thead><tbody>${categories.map((c) => `<tr><th scope="row"><a href="./category/${c.id}/1.html">${esc(c.name)}</a></th><td>${stats.categories[c.id].toLocaleString('zh-CN')}</td></tr>`).join('')}</tbody></table>
+    <h2>来源覆盖</h2><p>目前批量目录覆盖 15 类全球站点和产品，全部一级分类达到 1,000 条。新增维基数据目录涵盖政府、银行、学习资源、网络应用、报刊、游戏作品等；软件来源偏重 macOS 生态，机构名单可能存在历史名称与更新滞后，不代表完整的全球或中文官网库。ROR 本批仅收录 active 且类型包含 education 的机构；该状态是注册目录状态，不是本网核验结论。</p>
     <h2>为什么院校这么多？</h2><p>早期将全球机构批量目录与教育考试服务放在同一个分类。现在拆为教育考试与学习 ${stats.categories.education || 0} 条、内地院校与机构 ${stats.categories['institutions-cn'] || 0} 条、港澳台院校与机构 ${stats.categories['institutions-hmt'] || 0} 条、海外院校与机构 ${stats.categories['institutions-global'] || 0} 条。记录全部保留，数量不代表推荐程度。</p><h2>中文名称从哪里来？</h2><p>优先使用已有中文名称和维基数据中文标签，其余为本地模型生成的参考译名。机器译名尚未逐条人工校对；原名、来源记录和网址保持不变，仍支持原文搜索。维基数据标签按 CC0 提供，详情可查看所用版本。<a href="./data/localization.json" download>下载中文名称与翻译来源</a>。</p>
-    <ul class="source-list">${manifest.sources.map((s) => `<li><h3>${external(s.url, sourceName(s))}</h3><p>${stats.sources[s.id] || 0} 条 · ${esc(s.license)} · 采集于 ${esc(s.collected_at)}</p><p><a href="./data/licenses/${s.license_file}">许可证全文</a>${(s.additional_license_files || []).map((file) => ` · <a href="./data/licenses/${file}">地区元数据许可</a>`).join('')} · ${external(s.download_url, '上游数据入口')}</p><p class="muted">每条详情保留来源记录和固定提交或版本快照，SHA-256 见来源清单。</p>${s.attribution ? `<p>${esc(s.attribution)}</p>` : ''}</li>`).join('')}</ul>
-    <h2>清洗规则</h2><p>只批量收录上游明确列出的 HTTPS 首页；不把 HTTP 地址擅自改成 HTTPS。不导入安装包、字体、停用软件、版本变体、带凭据或参数的地址。按归一化首页去重，人工维护记录优先。HTTPS 只是收录条件，不证明网站归属或可用性。</p>
+    <ul class="source-list">${manifest.sources.map((s) => `<li><h3>${external(s.url, sourceName(s))}</h3><p>${stats.sources[s.id] || 0} 条 · ${esc(s.license)} · 采集于 ${esc(s.collected_at)}</p><p><a href="./data/licenses/${s.license_file}">许可证全文</a>${(s.additional_license_files || []).map((file) => ` · <a href="./data/licenses/${file}">地区元数据许可</a>`).join('')} · ${external(s.download_url, '上游数据入口')}</p><p class="muted">每条详情保留来源记录。维基数据实体页可能更新，本次查询和原始字段另存快照；固定提交、查询及 SHA-256 见来源清单。</p>${s.attribution ? `<p>${esc(s.attribution)}</p>` : ''}</li>`).join('')}</ul>
+    <h2>清洗规则</h2><p>Homebrew、Hipo、ROR 批次只收录上游明确列出的 HTTPS 首页；维基数据批次保留上游 HTTP/HTTPS 官网字段，不把 HTTP 地址擅自改成 HTTPS。不导入安装包、字体、停用软件、版本变体、带凭据或参数的地址。按归一化首页去重，人工维护记录优先。HTTPS 只是收录条件，不证明网站归属或可用性。</p>
     <dl class="quality-counts"><dt>不同主机名</dt><dd>${stats.unique_hosts}</dd><dt>有来源链的批量记录</dt><dd>${stats.imported_with_source}</dd><dt>已核对具体入口</dt><dd>${stats.verified_entries}</dd></dl>
     <h2>数据下载</h2><p><a href="./data/catalog.json" download>完整目录 JSON</a> · <a href="./data/quality.json" download>质量统计 JSON</a> · <a href="./data/sources.json" download>来源版本与过滤统计</a></p><p>导出的字段和状态与页面一致，勿把 sourced 当作 verified。第三方派生字段遵循上游许可证；本项目原创内容暂未授予独立复用许可。</p><h2>发现问题</h2><p>详情页可提交纠错；维护者在独立修订文件保留更正或撤销记录，刷新来源不会清除修订。来源更新须先完成校验，再提交 main；构建通过后发布。</p>` });
 }
@@ -228,7 +232,15 @@ write('data/catalog.json', JSON.stringify(sites.map(({ _file, ...site }) => site
 write('data/quality.json', JSON.stringify(stats, null, 2));
 write('data/sources.json', JSON.stringify(manifest, null, 2));
 const localizationFile = path.join(ROOT, 'data/localization/zh-CN.json');
-if (fs.existsSync(localizationFile)) write('data/localization.json', fs.readFileSync(localizationFile, 'utf8'));
+if (fs.existsSync(localizationFile)) {
+  const payload = JSON.parse(fs.readFileSync(localizationFile, 'utf8'));
+  for (const site of sites) if (site.localization) payload.records[site.id] = site.localization;
+  payload.coverage = Object.fromEntries(Object.entries(stats.localization).filter(([method]) => method !== 'not-localized'));
+  const model = path.join(ROOT, 'data/localization/directory-model.json');
+  if (fs.existsSync(model)) payload.directory_batch = JSON.parse(fs.readFileSync(model, 'utf8'));
+  write('data/localization.json', JSON.stringify(payload));
+}
+write('data/directory-evidence.json', fs.readFileSync(path.join(ROOT, 'data/imported/directory-evidence.json'), 'utf8'));
 for (const source of manifest.sources) for (const file of [source.license_file, ...(source.additional_license_files || [])]) write(`data/licenses/${file}`, fs.readFileSync(path.join(ROOT, 'data/licenses', file), 'utf8'));
 write('assets/sites.json', indexJson);
 for (const [file, content] of Object.entries(sourceFiles)) write(`assets/${file}`, file === 'app.js' ? content.replace("'./search.js'", `'./search.js?v=${buildVersion}'`) : content);

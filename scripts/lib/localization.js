@@ -5,7 +5,7 @@ const regions = new Intl.DisplayNames(['zh-CN'], { type: 'region' });
 export function displayDescription(site) {
   if (!site.category.startsWith('institutions-')) return site.description;
   const region = site.region && site.region !== 'GLOBAL' ? regions.of(site.region) : '未注明所在地';
-  const source = site.source.id === 'ror' ? '全球研究机构注册目录（ROR）' : 'Hipo 高校目录';
+  const source = site.source.id === 'ror' ? '全球研究机构注册目录（ROR）' : site.source.id === 'wikidata-directory' ? '维基数据分类目录' : 'Hipo 高校目录';
   return `${region}的教育机构目录记录，来源：${source}。官网归属与机构资质待核对。`;
 }
 

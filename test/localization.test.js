@@ -8,10 +8,10 @@ const sites = loadSites();
 const index = buildSearchIndex(sites, '2026-09-30');
 
 test('education services are separated from regional institution catalogs without removing records', () => {
-  assert.equal(sites.length, 22799);
-  assert.deepEqual(sites.filter((s) => s.category === 'education').map((s) => s.id).sort(), ['cet', 'chsi', 'cpta', 'icourse163', 'moe', 'neea', 'ntce', 'smartedu', 'xuetangx', 'yz-chsi']);
+  assert.equal(sites.length, 34630);
+  assert.deepEqual(sites.filter((s) => s.category === 'education' && !s.source).map((s) => s.id).sort(), ['cet', 'chsi', 'cpta', 'icourse163', 'moe', 'neea', 'ntce', 'smartedu', 'xuetangx', 'yz-chsi']);
   assert.equal(sites.filter((s) => s.category === 'institutions-cn').length, 1785);
-  assert.equal(sites.filter((s) => s.category === 'institutions-hmt').length, 92);
+  assert.equal(sites.filter((s) => s.category === 'institutions-hmt').length, 1000);
   assert.equal(sites.filter((s) => s.category === 'institutions-global').length, 17044);
   assert.deepEqual(validate(loadCategories(), sites, '2026-09-30'), []);
 });
@@ -43,6 +43,6 @@ test('initial browsing puts curated services before overseas lists; education fi
   const results = queryCatalog('', ordered, { status: 'all', today: '2026-09-30' });
   assert.ok(results.items.every((s) => s.source === 'curated'));
   const exams = queryCatalog('', ordered, { category: 'education', status: 'all', today: '2026-09-30' });
-  assert.equal(exams.total, 10);
-  assert.ok(exams.items.every((s) => /[\u3400-\u9fff]/.test(s.n)));
+  assert.equal(exams.total, 1000);
+  assert.ok(exams.items.filter((s) => s.source === 'curated').every((s) => /[\u3400-\u9fff]/.test(s.n)));
 });

@@ -31,7 +31,7 @@
   icon: 💻
   order: 8
 - id: devices
-  name: 手机与数码品牌
+  name: 手机数码与硬件
   icon: 📱
   order: 9
 - id: institutions-cn

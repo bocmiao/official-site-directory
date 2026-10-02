@@ -22,7 +22,7 @@ const casks = new Map(raw['homebrew-cask'].map((r) => [r.token, r]));
 const universities = new Map(raw['hipo-universities'].flatMap((r) => (r.web_pages || []).map((url) => [url.replace(/\/$/, ''), r])));
 const records = {};
 for (const s of loadSites(ROOT + '/data', { profiles: false })) {
-  if (!s.source) continue;
+  if (!s.source || !inputs.some(([id]) => id === s.source.id)) continue;
   const profile = { source_record: s.source.record, homepage: s.url, collected_at: s.collected_at };
   if (s.source.id === 'ror') {
     const r = ror.get(s.source.record);
@@ -32,11 +32,14 @@ for (const s of loadSites(ROOT + '/data', { profiles: false })) {
     profile.organization_types = r.types;
     profile.name_languages = [...new Set(r.names.map((n) => n.lang).filter(Boolean))].sort();
     profile.source_updated = r.admin.last_modified.date;
+    profile.identifiers = r.external_ids.filter((v) => ['wikidata', 'isni', 'fundref', 'grid'].includes(v.type))
+      .flatMap((v) => v.all.map((value) => ({ scheme: v.type, value })));
   } else if (s.source.id === 'homebrew-cask') {
     const r = casks.get(s.source.record);
     if (!r) throw new Error(`Missing cask record: ${s.id}`);
     profile.distribution = 'Homebrew Cask';
     profile.cask_languages = r.languages || [];
+    if (typeof r.version === 'string') profile.package_version = r.version;
     // Cask platform metadata is package scope, not a complete list of vendor OS support.
     if (r.supported_platforms?.some((p) => !p.includes('linux'))) profile.package_platforms = ['macOS'];
   } else {

@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "collected_at": "2026-09-30",
+  "accepted": 11831,
+  "baseline_count": 22799,
+  "baseline_ids_sha256": "8ce3ea1254f3c5ceeeccc1cf9ba292869b4f3e911f138e047168c5f22d49e532",
+  "queries": {
+    "tools": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q189210; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "8240aa6a1ffa0e9df36c8f22b9155be056a0c8f07a17373b9864f67e6575ae7f",
+      "rows": 1270
+    },
+    "social": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q3220391; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "150f7ababb5d8e734f6f3712b0d7a61ee624da6508ff7a9e188ed0cc66380235",
+      "rows": 459
+    },
+    "forums": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q168210; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "05f45a4d94c80c312899b6f22cf07484da7838262d0460260fa852e3cd3cc2e3",
+      "rows": 216
+    },
+    "blogs": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q30849; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "70966633651cf041ea373d3fa1df6b1a2603f6cb9f2bd6f1a02b73a80d541789",
+      "rows": 665
+    },
+    "gov": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q327333; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "0030cc6711789f0d6ff7f7c0ad9cbc9cc7d070aaf725776cf96264af23617b6f",
+      "rows": 3089
+    },
+    "education": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q7075; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "dfe98f1345799c9168fbd1c3937a401d1ca4d4c0221139386aa42f718c6de761",
+      "rows": 3048
+    },
+    "finance": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q22687; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "70fad41d1cd15f847268a42d268533d12c5c8acd139c854ca6aed1eb15c8c8f2",
+      "rows": 2118
+    },
+    "telecom": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q2401749; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "111f0033a29b83dbd9d05ca800e4dc986445ba1ab8cc2e0ab09c4a94c92e8f8e",
+      "rows": 371
+    },
+    "utilities-public": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31/wdt:P279* wd:Q1951366; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "2650cb8075d95829dc68cea71e12ef2b909490295e5e29e4e850961d06f211dc",
+      "rows": 781
+    },
+    "utilities": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q1341478; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "90910135268552563049e25dc2ed0268fb1f87077f1e8487e9ccefab6b0ddb16",
+      "rows": 353
+    },
+    "travel": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q46970; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "d45832b5697c7e91ce6a96a0b86a08eb260b30b04159000b83a440fe711c0c3a",
+      "rows": 1813
+    },
+    "shopping": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q507619; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "20d3149d5ab59f1110a242855af003a2654b849037ae357c6ff077d7752ac0d8",
+      "rows": 2475
+    },
+    "shops": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q4382945; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "ea27aa5de8c8809fcddea26bf829edbf6eb51426e75d6566123cd015d3cd3e14",
+      "rows": 788
+    },
+    "news": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q11032; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "f65b71f9b101783eb150b30472cc60a60a5cd4c9c0a92592ade2a15e5d4ecd6f",
+      "rows": 3030
+    },
+    "games": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q7889; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "f105e7a1057ec0508ceb14bdd5094622c7c20186404e212e8116ad6ea2bb9da5",
+      "rows": 3000
+    },
+    "hmt": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site ?territory WHERE { VALUES ?territory { wd:Q865 wd:Q864 wd:Q14773 } ?item wdt:P17 ?territory; wdt:P856 ?site; wdt:P31/wdt:P279* wd:Q3914. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 4000 } ?territory wdt:P297 ?country. OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "473b30770cb708047a9a8b71306d6b3f42375b724f52bcca0afb2b8c7b2c3697",
+      "rows": 4008
+    },
+    "devices": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q107009746; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "f5e1d932239917c520ba5aea706f415efb57c126b80172e9114d9a0ed03c81cf",
+      "rows": 10
+    },
+    "devices-industry": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P452 wd:Q5358497; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "86d3481e75f8ea34da24d11684e5aab75e99cf53e10fedd840078c84614ee391",
+      "rows": 507
+    },
+    "devices-computers": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31/wdt:P279* wd:Q1055701; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "af12779e8052b0a979543103d510a9db685fe009791c33fcd888ed52688c9d0a",
+      "rows": 9
+    },
+    "devices-industry-tree": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P452/wdt:P279* wd:Q5358497; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "146188ba0c867dda8410632e30e8a57601824afe7b8d03953d58d4a42b72bb21",
+      "rows": 1066
+    },
+    "devices-phone-models": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P279+ wd:Q22645; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "3ba561710d869c173dc103b9b11ed544bad3ef0a6f923c283c8d52e2aea97c11",
+      "rows": 789
+    },
+    "devices-hardware-models": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P279+ wd:Q3966; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "261f69483845841c0da75b30d90ce08aac96fe6a65af044ffef444a37df89e27",
+      "rows": 1004
+    },
+    "tools-databases": {
+      "query": "SELECT DISTINCT ?item ?site ?en ?zh ?description ?country ?founded WHERE { { SELECT DISTINCT ?item ?site WHERE { ?item wdt:P31 wd:Q7094076; wdt:P856 ?site. FILTER NOT EXISTS { ?item wdt:P576 ?ended } } LIMIT 3000 } OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en)=\"en\") } OPTIONAL { ?item rdfs:label ?zh FILTER(LANG(?zh)=\"zh\") } OPTIONAL { ?item schema:description ?description FILTER(LANG(?description)=\"zh\") } OPTIONAL { ?item wdt:P17/wdt:P297 ?country } OPTIONAL { ?item wdt:P571 ?founded } }",
+      "sha256": "2d9c7e82db944a80d98a7332c4df0fb52bfa3768bf9d72b9f1e0dea134a32fbf",
+      "rows": 2592
+    }
+  },
+  "skipped": {
+    "more_specific_category": 7,
+    "duplicate_identity": 2507,
+    "unsuitable_record": 850,
+    "category_target_reached": 18201,
+    "museum_not_learning_portal": 65
+  },
+  "sources": [
+    {
+      "id": "wikidata-directory",
+      "name": "维基数据分类目录",
+      "url": "https://www.wikidata.org/",
+      "download_url": "https://query.wikidata.org/",
+      "license": "CC0-1.0",
+      "license_file": "wikidata-cc0.txt",
+      "attribution": "来自 Wikidata 的结构化数据（CC0）；原始官网字段及本次查询快照保留，不等于已完成官网核验。"
+    }
+  ]
+}

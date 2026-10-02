@@ -48,8 +48,8 @@ test('publication requires an explicit HTTPS site URL; candidates stay out of si
   assert.doesNotMatch(read('category/education/1.html'), /Harvard University/);
   assert.ok(stats.status.sourced >= 2000);
   assert.ok(Buffer.byteLength(read('index.html')) < 40000, 'homepage must not inline thousands of rows');
-  assert.ok(Buffer.byteLength(read('assets/sites.json')) < 12000000, 'full search payload budget for 20k+ records');
-  assert.ok(Buffer.byteLength(read('assets/sites.json')) / index.length < 550, 'bilingual names and pinyin stay within the 12 MB total budget');
+  assert.ok(Buffer.byteLength(read('assets/sites.json')) < 20000000, 'full search payload budget for 35k records');
+  assert.ok(Buffer.byteLength(read('assets/sites.json')) / index.length < 550, 'bilingual names and pinyin stay within the 20 MB total budget');
   const ror = read('site/ror-03cve4549.html');
   assert.match(ror, /清华大学/);
   assert.match(ror, /22902037/);

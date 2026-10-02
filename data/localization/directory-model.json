@@ -1,0 +1,22 @@
+{
+  "model": "Helsinki-NLP/opus-mt-en-zh",
+  "conversion": "gaudi/opus-mt-en-zh-ctranslate2",
+  "revision": "dcd22168f08b99dd34c62bc2195e31dc2f04e90b",
+  "license": "Apache-2.0",
+  "engine": "CTranslate2 4.8.2 / SentencePiece 0.2.2",
+  "beam_size": 4,
+  "output_sha256": "e6157f6c0a822b8cb6ec0735b2ca7b3db95b372b708485e6d4b010ead6497c71",
+  "coverage": {
+    "source": 5869,
+    "machine": 5565,
+    "retained": 397
+  },
+  "reviewed_retained_ids": [
+    "wd-q1342528",
+    "wd-q140356691",
+    "wd-q18537021",
+    "wd-q19721395",
+    "wd-q122032458"
+  ],
+  "note": "名称参考翻译，保留原名；不构成官方中文名称或官网身份核验。"
+}

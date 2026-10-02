@@ -24,8 +24,9 @@ test('real catalog exceeds 2,000 new records and distinct hosts without promotin
   assert.deepEqual(validate(loadCategories(), sites, today), []);
   for (const s of imported) {
     assert.equal(s.verification_status, 'sourced');
-    assert.ok(s.url.startsWith('https://'));
+    assert.ok(s.source.id === 'wikidata-directory' || s.url.startsWith('https://'));
     if (s.source.id === 'ror') assert.match(s.source.snapshot, /^https:\/\/zenodo.org\/records\/\d+$/);
+    else if (s.source.id === 'wikidata-directory') assert.match(s.source.sha256, /^[a-f0-9]{64}$/);
     else assert.match(s.source.url, /\/blob\/[a-f0-9]{40}\//);
     assert.deepEqual(s.entries, []);
     assert.equal(s.verified_at, undefined);

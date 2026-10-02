@@ -10,10 +10,10 @@ const index = buildSearchIndex(sites, today);
 const find = (query, options = {}) => queryCatalog(query, index, { status: 'all', today, ...options });
 
 test('four discovery categories expose useful services without institution imports', () => {
-  for (const [category, count] of [['education', 10], ['tools', 6], ['news', 7], ['games', 9]]) {
+  for (const [category, count] of [['education', 1000], ['tools', 1000], ['news', 1000], ['games', 1000]]) {
     const result = find('', { category });
     assert.equal(result.total, count);
-    assert.ok(result.items.every((s) => s.source === 'curated' && s.c === category));
+    assert.ok(result.items.every((s) => s.c === category && !s.id.startsWith('ror-')));
   }
   assert.equal(sites.find((s) => s.id === 'steam').category, 'games');
   for (const category of ['education', 'tools', 'news', 'games']) {

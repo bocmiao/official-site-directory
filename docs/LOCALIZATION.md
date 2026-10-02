@@ -24,3 +24,7 @@
 `data/localization/editorial.json` 以原名或翻译输入为键，保存维护者参考译名。修改后重新导入并执行 `npm test`、`npm run audit:data`。已存在的来源中文名和 Wikidata 名称优先级更高；源名称有误时应针对原始来源或具体记录修订，不能静默替换来源身份。
 
 Wikidata 结构化中文标签使用 [CC0](https://www.wikidata.org/wiki/Wikidata:Licensing)。翻译模型信息见 [Helsinki-NLP 模型卡](https://huggingface.co/Helsinki-NLP/opus-mt-en-zh)，原模型许可为 Apache-2.0。网页数据下载包含中文名称及逐条来源，原有 ROR、Hipo、Homebrew 与 GeoNames 的许可和归属说明继续保留。
+
+## v0.8 分类扩充的中文名称
+
+新增维基数据批次的中文名保存在 `data/imported/directory.json` 的 localization 字段，避免覆盖原有院校译名。5,869 条来源中文名、5,565 条机器参考译名、397 条专名保留原文。机器翻译设置和输出摘要见 `data/localization/directory-model.json`，使用同一冻结版本的本地模型。`scripts/localize-directory.js <translated.jsonl>` 校验 ID、原名和来源 ID 后写入；英文原名保留。网站导出合并两批中文字段。

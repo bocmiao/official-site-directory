@@ -8,6 +8,7 @@ import { identityUrl, digest } from './lib/import.js';
 
 const sites = loadSites();
 const errors = validate(loadCategories(), sites);
+for (const category of loadCategories()) if (sites.filter((s) => s.category === category.id && s.verification_status !== 'withdrawn').length < 1000) errors.push(`${category.id}: below 1,000 visible records`);
 const imported = sites.filter((s) => s.source);
 if (imported.length < 2000) errors.push('Imported catalog below 2,000 records');
 if (new Set(imported.map((s) => identityUrl(s.url))).size !== imported.length) errors.push('Duplicate imported homepage');

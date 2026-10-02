@@ -2,11 +2,13 @@
 export const TOPICS = [
   ['exam', 'education', '考试报名与查分', /考试|报名|查分|考研/],
   ['credentials', 'education', '学历与学籍', /学历|学籍/],
+  ['libraries', 'education', '图书馆与学习资源', /图书馆|圖書館|\blibrar(y|ies)\b/i],
   ['courses', 'education', '课程与学习资源', /课程|学习资源|智慧教育/],
   ['education-service', 'education', '教育公共服务', null],
   ['pdf-tools', 'tools', 'PDF与文档', /PDF|文档/i],
   ['image-tools', 'tools', '图片处理', /图片|修图|PSD/i],
   ['diagram-tools', 'tools', '绘图与白板', /绘图|流程图|思维导图|白板/],
+  ['web-apps', 'tools', '网络应用', /网络应用/],
   ['tools-other', 'tools', '其他在线工具', null],
   ['tech-news', 'news', '科技与数码', /科技新闻|数码资讯/],
   ['game-news', 'news', '游戏资讯', /游戏资讯|游戏文化/],
@@ -15,6 +17,7 @@ export const TOPICS = [
   ['mobile-games', 'games', '手游与社区', /手机游戏/],
   ['web-games', 'games', '网页与小游戏', /网页游戏|小游戏/],
   ['game-stores', 'games', '电脑游戏平台', /游戏平台|电脑游戏/],
+  ['video-games', 'games', '电子游戏作品', /电子游戏/],
   ['games-other', 'games', '其他游戏资源', null],
   ['dev', 'software', '开发与编程', /开发工具|开发环境|开发者|软件开发|前端开发|后端开发|编程|编辑器|版本控制|\b(ide|code editor|text editor|developer|development|programming|debugger|database client|sql|terminal|git client|api client|command-line)\b/i],
   ['browser', 'software', '浏览与搜索', /浏览器|\b(browser|web search|search engine)\b/i],
@@ -53,7 +56,7 @@ export function classify(site) {
   const matches = candidates.filter((t) => t.id === editorialTopic || t.pattern?.test(topicText));
   const topic = matches[0] || candidates.find((t) => !t.pattern);
   const tags = [...(site.tags || []), ...matches.map((t) => t.name)];
-  if (!candidates.length) tags.push(({ education: '教育考试服务', gov: '政务服务', finance: '银行金融', telecom: '生活服务', travel: '出行交通', shopping: '购物电商', social: '社交与内容', devices: '数码品牌' })[site.category] || site.category);
+  if (!candidates.length) tags.push(({ education: '教育考试服务', gov: '政务服务', finance: '银行金融', telecom: '生活服务', travel: '出行交通', shopping: '购物电商', social: '社交与内容', devices: '手机数码与硬件' })[site.category] || site.category);
   if (isInstitution) for (const [label, pattern] of subjects) if (pattern.test(topicText)) tags.push(label);
   if (topic && !matches.length) tags.push(topic.name);
   return { ...site, subcategory: topic?.id || site.category, tags: [...new Set(tags)].sort((a, b) => a.localeCompare(b, 'zh-CN')),

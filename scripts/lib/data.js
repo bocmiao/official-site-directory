@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
+import { createHash } from 'node:crypto';
 import { pinyin } from 'pinyin-pro';
 import { effectiveStatus, hostOf, parseWebUrl } from '../../src/search.js';
 import { classify, TOPICS } from './taxonomy.js';
@@ -35,7 +36,7 @@ export function loadSites(dataDir = DATA_DIR, { profiles = true, localization = 
       category: path.basename(file, '.yaml'), _file: `data/sites/${file}`,
     }));
   });
-  const records = ['catalog.json', 'ror.json'].flatMap((file) => {
+  const records = ['catalog.json', 'ror.json', 'directory.json'].flatMap((file) => {
     const imported = path.join(dataDir, 'imported', file);
     const values = fs.existsSync(imported) ? JSON.parse(fs.readFileSync(imported, 'utf8')) : [];
     if (!Array.isArray(values)) throw new Error('Imported catalog must be an array');
@@ -51,6 +52,15 @@ export function loadSites(dataDir = DATA_DIR, { profiles = true, localization = 
     if (value.verification_status && !['pending', 'review', 'withdrawn'].includes(value.verification_status)) throw new Error(`Overrides cannot grant verification: ${id}`);
   }
   const sites = [...curated, ...records.filter((s) => !curatedIds.has(s.id)).map((s) => ({ ...s, ...overrides[s.id] }))];
+  const snapshotPath = path.join(dataDir, 'imported/directory-evidence.json');
+  const snapshots = fs.existsSync(snapshotPath) ? JSON.parse(fs.readFileSync(snapshotPath, 'utf8')) : {};
+  for (const site of sites.filter((s) => s.source?.id === 'wikidata-directory')) {
+    const proof = snapshots[site.id];
+    if (!proof || proof.sha256 !== site.source.sha256 || proof.batch !== site.source.batch ||
+      createHash('sha256').update(JSON.stringify(proof.row)).digest('hex') !== proof.sha256 ||
+      parseWebUrl(proof.row.site?.value)?.href !== site.url ||
+      proof.row.item?.value?.split('/').pop() !== site.source.record) throw new Error(`Missing or stale directory snapshot: ${site.id}`);
+  }
   const profileFile = path.join(dataDir, 'profiles.json');
   const profileData = profiles && fs.existsSync(profileFile) ? JSON.parse(fs.readFileSync(profileFile, 'utf8')) : null;
   if (profileData && (profileData.schema_version !== 1 || !profileData.records || typeof profileData.records !== 'object')) throw new Error('Invalid profiles schema');
@@ -70,7 +80,7 @@ export function loadSites(dataDir = DATA_DIR, { profiles = true, localization = 
 }
 
 export function loadSources(dataDir = DATA_DIR) {
-  const batches = ['sources.json', 'ror-source.json'].flatMap((file) => {
+  const batches = ['sources.json', 'ror-source.json', 'directory-source.json'].flatMap((file) => {
     const target = path.join(dataDir, 'imported', file);
     return fs.existsSync(target) ? [JSON.parse(fs.readFileSync(target, 'utf8'))] : [];
   });
@@ -113,11 +123,13 @@ export function validate(categories, sites, today = new Date().toISOString().sli
     if (s.classification && s.classification !== 'rules-v1') fail('未知分类规则');
     if (s.profile) {
       const p = s.profile;
-      const fields = ['source_record', 'homepage', 'collected_at', 'established', 'locations', 'organization_types', 'name_languages', 'source_updated', 'distribution', 'cask_languages', 'package_platforms'];
+      const fields = ['source_record', 'homepage', 'collected_at', 'established', 'locations', 'organization_types', 'name_languages', 'source_updated', 'distribution', 'cask_languages', 'package_platforms', 'identifiers', 'package_version'];
       if (Object.keys(p).some((k) => !fields.includes(k))) fail('资料含未知字段');
       if (p.source_record !== s.source?.record || p.homepage !== s.url || p.collected_at !== s.collected_at) fail('资料与来源记录不一致');
       if (p.established != null && (!Number.isInteger(p.established) || p.established < 1 || p.established > Number(today.slice(0, 4)))) fail('成立年份无效');
       if (p.source_updated && (!validDate(p.source_updated) || p.source_updated > today)) fail('上游更新日期无效');
+      if (p.package_version != null && !text(p.package_version)) fail('软件包版本必须是非空字符串');
+      if (p.identifiers && (!Array.isArray(p.identifiers) || p.identifiers.some((v) => !v || !['wikidata', 'isni', 'fundref', 'grid'].includes(v.scheme) || !text(v.value) || Object.keys(v).some((k) => !['scheme', 'value'].includes(k))))) fail('机构标识资料无效');
       for (const k of ['organization_types', 'name_languages', 'cask_languages', 'package_platforms']) if (p[k] != null && !stringList(p[k])) fail(`资料 ${k} 必须是字符串列表`);
       if (p.locations && (!Array.isArray(p.locations) || p.locations.some((l) => !l || !/^[A-Z]{2}$/.test(l.country) || typeof l.city !== 'string' || typeof l.subdivision !== 'string' || Object.keys(l).some((k) => !['country', 'city', 'subdivision'].includes(k))))) fail('所在地资料无效');
     }
@@ -133,7 +145,10 @@ export function validate(categories, sites, today = new Date().toISOString().sli
     if (s.region != null && (typeof s.region !== 'string' || !/^(GLOBAL|[A-Z]{2})$/.test(s.region))) fail('region 必须是地区代码或 GLOBAL');
     if (s.verification_status === 'sourced' || s.source != null) {
       const source = s.source;
-      if (!source || !['homebrew-cask', 'hipo-universities', 'ror'].includes(source.id) || !text(source.record) || !parseWebUrl(source.url)) fail('source 必须包含已支持的 id、record 与来源 url');
+      if (!source || !['homebrew-cask', 'hipo-universities', 'ror', 'wikidata-directory'].includes(source.id) || !text(source.record) || !parseWebUrl(source.url)) fail('source 必须包含已支持的 id、record 与来源 url');
+      else if (source.id === 'wikidata-directory') {
+        if (!/^Q[1-9]\d*$/.test(source.record) || source.url !== `https://www.wikidata.org/wiki/${source.record}` || !/^[a-f0-9]{64}$/.test(source.sha256 || '') || !/^[a-z-]+$/.test(source.batch || '')) fail('维基数据记录缺少实体 ID、查询批次或快照哈希');
+      }
       else if (source.id === 'ror') {
         if (!/^https:\/\/ror\.org\/0[a-z0-9]{6}\d{2}$/.test(source.url) || source.record !== source.url || !/^https:\/\/zenodo\.org\/records\/[1-9]\d*$/.test(source.snapshot || '')) fail('ROR 记录必须包含机构 ID 与固定版本快照');
       } else {
